@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from cpg2py.abc import Storage
-from cpg2py.cpg import _Graph
+from cpg2py._abc import Storage
+from cpg2py._cpg import CpgGraph
 
 
 @pytest.fixture
@@ -30,9 +30,9 @@ def graph(storage):
         storage: Storage fixture
 
     Returns:
-        _Graph: A new Graph instance
+        CpgGraph: A new Graph instance
     """
-    return _Graph(storage)
+    return CpgGraph(storage)
 
 
 @pytest.fixture
@@ -90,9 +90,9 @@ def populated_graph(populated_storage):
         populated_storage: Populated Storage fixture
 
     Returns:
-        _Graph: Graph instance with nodes and edges
+        CpgGraph: Graph instance with nodes and edges
     """
-    return _Graph(populated_storage)
+    return CpgGraph(populated_storage)
 
 
 @pytest.fixture

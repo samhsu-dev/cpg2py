@@ -3,8 +3,8 @@ Unit tests for Edge class.
 """
 import pytest
 
-from cpg2py.abc import Storage
-from cpg2py.cpg import _Graph
+from cpg2py._abc import Storage
+from cpg2py._cpg import CpgGraph
 
 
 @pytest.mark.unit

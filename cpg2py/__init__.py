@@ -1,15 +1,15 @@
 from csv import DictReader
 from pathlib import Path
 
-from .abc import *
-from .cpg import _Graph
-from .exceptions import CPGError, EdgeNotFoundError, NodeNotFoundError, TopFileNotFoundError
-from .logger import get_logger
+from ._abc import *
+from ._cpg import CpgGraph, CpgNode, CpgEdge
+from ._exceptions import CPGError, EdgeNotFoundError, NodeNotFoundError, TopFileNotFoundError
+from ._logger import get_logger
 
 logger = get_logger(__name__)
 
 
-def cpg_graph(node_csv: Path, edge_csv: Path, verbose: bool = False) -> "_Graph":
+def cpg_graph(node_csv: Path, edge_csv: Path, verbose: bool = False) -> CpgGraph:
     """
     Creates a CPG graph from CSV files.
 
@@ -61,11 +61,14 @@ def cpg_graph(node_csv: Path, edge_csv: Path, verbose: bool = False) -> "_Graph"
             if not storage.set_edge_props(edge_id, edge_props):
                 if verbose:
                     logger.warning("Failed to set properties for edge %s", edge_id)
-    return _Graph(storage)
+    return CpgGraph(storage)
 
 
 __all__ = [
     "cpg_graph",
+    "CpgGraph",
+    "CpgNode",
+    "CpgEdge",
     "AbcGraphQuerier",
     "AbcNodeQuerier",
     "AbcEdgeQuerier",

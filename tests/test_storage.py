@@ -3,7 +3,7 @@ Unit tests for Storage class.
 """
 import pytest
 
-from cpg2py.abc import Storage
+from cpg2py._abc import Storage
 
 
 @pytest.mark.unit

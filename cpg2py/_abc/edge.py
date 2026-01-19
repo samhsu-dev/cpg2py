@@ -3,7 +3,7 @@ from __future__ import annotations
 import abc
 from typing import Any, Dict, Optional, Tuple
 
-from ..exceptions import EdgeNotFoundError
+from .._exceptions import EdgeNotFoundError
 from .storage import Storage
 
 

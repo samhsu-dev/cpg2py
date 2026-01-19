@@ -1,7 +1,7 @@
 import abc
 from typing import Any, Dict, Optional
 
-from ..exceptions import NodeNotFoundError
+from .._exceptions import NodeNotFoundError
 from .storage import Storage
 
 

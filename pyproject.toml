@@ -40,7 +40,7 @@ Repository = "https://github.com/YichaoXu/cpg2py"
 Documentation = "https://github.com/YichaoXu/cpg2py"
 
 [tool.setuptools]
-packages = ["cpg2py", "cpg2py.abc", "cpg2py.cpg"]
+packages = ["cpg2py", "cpg2py._abc", "cpg2py._cpg"]
 include-package-data = true
 
 [dependency-groups]

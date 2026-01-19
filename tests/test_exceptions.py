@@ -3,7 +3,7 @@ Unit tests for custom exceptions.
 """
 import pytest
 
-from cpg2py.exceptions import (
+from cpg2py._exceptions import (
     CPGError,
     EdgeNotFoundError,
     NodeNotFoundError,

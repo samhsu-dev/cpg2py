@@ -3,9 +3,9 @@ Unit and integration tests for Graph class and cpg_graph factory.
 """
 import pytest
 
-from cpg2py.abc import Storage
-from cpg2py.cpg import _Graph
-from cpg2py.exceptions import EdgeNotFoundError, NodeNotFoundError, TopFileNotFoundError
+from cpg2py._abc import Storage
+from cpg2py._cpg import CpgGraph
+from cpg2py._exceptions import EdgeNotFoundError, NodeNotFoundError, TopFileNotFoundError
 
 
 @pytest.mark.unit
@@ -20,11 +20,11 @@ class TestGraph:
         Act: Create Graph with storage
         Assert: Graph is created and storage is accessible
         """
-        graph = _Graph(storage)
+        graph = CpgGraph(storage)
         assert graph is not None
         assert graph.storage == storage
 
-    def test_graph_node_returns_node_when_exists(self, graph, storage):
+    def test_graph_node_returns_node_when_exists(self, graph: CpgGraph, storage: Storage):
         """
         Tests that graph.node returns node when it exists.
 
@@ -264,6 +264,160 @@ class TestGraph:
         with pytest.raises(TopFileNotFoundError) as exc_info:
             graph.topfile_node("node1")
         assert exc_info.value.node_id == "node1"
+
+    def test_graph_nodes_returns_all_nodes(self, graph, storage):
+        """
+        Tests that graph.nodes returns all nodes.
+
+        Arrange: Storage with multiple nodes
+        Act: Get all nodes
+        Assert: Returns all nodes
+        """
+        storage.add_node("node1")
+        storage.add_node("node2")
+        storage.add_node("node3")
+        nodes = list(graph.nodes())
+        assert len(nodes) == 3
+        node_ids = [n.id for n in nodes]
+        assert "node1" in node_ids
+        assert "node2" in node_ids
+        assert "node3" in node_ids
+
+    def test_graph_nodes_with_condition_filters_nodes(self, graph, storage):
+        """
+        Tests that graph.nodes filters nodes by condition.
+
+        Arrange: Storage with nodes having different properties
+        Act: Get nodes matching condition
+        Assert: Returns only matching nodes
+        """
+        storage.add_node("node1")
+        storage.add_node("node2")
+        storage.set_node_props("node1", {"type": "AST"})
+        storage.set_node_props("node2", {"type": "File"})
+        nodes = list(graph.nodes(lambda n: n.type == "AST"))
+        assert len(nodes) == 1
+        assert nodes[0].id == "node1"
+
+    def test_graph_edges_returns_all_edges(self, graph, storage):
+        """
+        Tests that graph.edges returns all edges.
+
+        Arrange: Storage with multiple edges
+        Act: Get all edges
+        Assert: Returns all edges
+        """
+        storage.add_node("node1")
+        storage.add_node("node2")
+        storage.add_node("node3")
+        storage.add_edge(("node1", "node2", "TYPE1"))
+        storage.add_edge(("node2", "node3", "TYPE2"))
+        edges = list(graph.edges())
+        assert len(edges) == 2
+
+    def test_graph_edges_with_condition_filters_edges(self, graph, storage):
+        """
+        Tests that graph.edges filters edges by condition.
+
+        Arrange: Storage with edges having different types
+        Act: Get edges matching condition
+        Assert: Returns only matching edges
+        """
+        storage.add_node("node1")
+        storage.add_node("node2")
+        storage.add_node("node3")
+        edge1 = ("node1", "node2", "TYPE1")
+        edge2 = ("node1", "node3", "TYPE2")
+        storage.add_edge(edge1)
+        storage.add_edge(edge2)
+        storage.set_edge_props(edge1, {"type": "PARENT_OF"})
+        storage.set_edge_props(edge2, {"type": "FLOWS_TO"})
+        edges = list(graph.edges(lambda e: e.type == "PARENT_OF"))
+        assert len(edges) == 1
+        assert edges[0].id == edge1
+
+    def test_graph_first_node_returns_first_matching_node(self, graph, storage):
+        """
+        Tests that graph.first_node returns first matching node.
+
+        Arrange: Storage with multiple nodes
+        Act: Get first node
+        Assert: Returns first node
+        """
+        storage.add_node("node1")
+        storage.add_node("node2")
+        first_node = graph.first_node()
+        assert first_node is not None
+        assert first_node.id in ["node1", "node2"]
+
+    def test_graph_first_node_with_condition_returns_first_match(self, graph, storage):
+        """
+        Tests that graph.first_node returns first node matching condition.
+
+        Arrange: Storage with nodes having different properties
+        Act: Get first node matching condition
+        Assert: Returns first matching node
+        """
+        storage.add_node("node1")
+        storage.add_node("node2")
+        storage.set_node_props("node1", {"type": "AST"})
+        storage.set_node_props("node2", {"type": "File"})
+        first_ast = graph.first_node(lambda n: n.type == "AST")
+        assert first_ast is not None
+        assert first_ast.id == "node1"
+
+    def test_graph_first_node_returns_none_when_no_match(self, graph, storage):
+        """
+        Tests that graph.first_node returns None when no node matches.
+
+        Arrange: Storage with nodes
+        Act: Get first node with condition that never matches
+        Assert: Returns None
+        """
+        storage.add_node("node1")
+        storage.set_node_props("node1", {"type": "AST"})
+        first_file = graph.first_node(lambda n: n.type == "File")
+        assert first_file is None
+
+    def test_graph_descendants_returns_all_descendants(self, graph, storage):
+        """
+        Tests that graph.descendants returns all descendant nodes.
+
+        Arrange: Storage with hierarchical structure
+        Act: Get descendants
+        Assert: Returns all descendants in BFS order
+        """
+        storage.add_node("root")
+        storage.add_node("child1")
+        storage.add_node("child2")
+        storage.add_node("grandchild")
+        storage.add_edge(("root", "child1", "PARENT_OF"))
+        storage.add_edge(("root", "child2", "PARENT_OF"))
+        storage.add_edge(("child1", "grandchild", "PARENT_OF"))
+        root = graph.node("root")
+        descendants = list(graph.descendants(root))
+        assert len(descendants) >= 2
+        descendant_ids = [d.id for d in descendants]
+        assert "child1" in descendant_ids or "child2" in descendant_ids
+
+    def test_graph_ancestors_returns_all_ancestors(self, graph, storage):
+        """
+        Tests that graph.ancestors returns all ancestor nodes.
+
+        Arrange: Storage with hierarchical structure
+        Act: Get ancestors
+        Assert: Returns all ancestors in BFS order
+        """
+        storage.add_node("root")
+        storage.add_node("child1")
+        storage.add_node("grandchild")
+        storage.add_edge(("root", "child1", "PARENT_OF"))
+        storage.add_edge(("child1", "grandchild", "PARENT_OF"))
+        grandchild = graph.node("grandchild")
+        ancestors = list(graph.ancestors(grandchild))
+        assert len(ancestors) >= 1
+        ancestor_ids = [a.id for a in ancestors]
+        assert "child1" in ancestor_ids or "root" in ancestor_ids
 
 
 @pytest.mark.integration

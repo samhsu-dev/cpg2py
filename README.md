@@ -153,7 +153,7 @@ The following abstract base classes (`ABC`) provide interfaces for extending **n
 This class defines how nodes interact with the graph storage.
 
 ```python
-from cpg2py.abc import AbcNodeQuerier
+from cpg2py import AbcNodeQuerier
 
 class MyNodeQuerier(AbcNodeQuerier):
     def __init__(self, graph, nid):
@@ -171,7 +171,7 @@ class MyNodeQuerier(AbcNodeQuerier):
 Defines the querying mechanisms for edges in the graph.
 
 ```python
-from cpg2py.abc import AbcEdgeQuerier
+from cpg2py import AbcEdgeQuerier
 
 class MyEdgeQuerier(AbcEdgeQuerier):
     def __init__(self, graph, f_nid, t_nid, e_type):
@@ -189,7 +189,7 @@ class MyEdgeQuerier(AbcEdgeQuerier):
 This class provides an interface for implementing custom graph query mechanisms.
 
 ```python
-from cpg2py.abc import AbcGraphQuerier
+from cpg2py import AbcGraphQuerier
 
 class MyGraphQuerier(AbcGraphQuerier):
     def node(self, nid: str):

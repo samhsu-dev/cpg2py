@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import List, Optional
 
-from ..abc import AbcGraphQuerier, AbcNodeQuerier
+from .._abc import AbcGraphQuerier, AbcNodeQuerier
 
 
-class _Node(AbcNodeQuerier):
+class CpgNode(AbcNodeQuerier):
     def __init__(self, graph: AbcGraphQuerier, nid: str) -> None:
         super().__init__(graph, nid)
 

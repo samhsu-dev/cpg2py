@@ -3,29 +3,32 @@ from __future__ import annotations
 import functools
 from typing import Callable, Iterable, Optional
 
-from ..abc import AbcGraphQuerier, Storage
-from ..exceptions import EdgeNotFoundError, NodeNotFoundError, TopFileNotFoundError
-from ..logger import get_logger
-from .edge import _Edge
-from .node import _Node
+from .._abc import AbcGraphQuerier, Storage
+from .._exceptions import EdgeNotFoundError, NodeNotFoundError, TopFileNotFoundError
+from .._logger import get_logger
+from .edge import CpgEdge
+from .node import CpgNode
 
 logger = get_logger(__name__)
 
 
-class _Graph(AbcGraphQuerier):
+class CpgGraph(AbcGraphQuerier[CpgNode, CpgEdge]):
     """
     Graph implementation for Object Property Diagram (OPG) used by ODgen and FAST.
 
     Provides concrete implementation of graph query operations for CPG data.
+
+    This class is parameterized with CpgNode and CpgEdge types, ensuring type safety
+    throughout the graph operations.
     """
 
-    __EdgeCondition = Callable[[_Edge], bool]
+    __EdgeCondition = Callable[[CpgEdge], bool]
     __always_true = lambda _: True
 
     def __init__(self, target: Storage) -> None:
         super().__init__(target)
 
-    def node(self, whose_id_is: str) -> Optional[_Node]:
+    def node(self, whose_id_is: str) -> Optional[CpgNode]:
         """
         Returns a node by its ID.
 
@@ -39,14 +42,14 @@ class _Graph(AbcGraphQuerier):
             NodeNotFoundError: If node is not found in the graph
         """
         try:
-            return _Node(self.storage, whose_id_is)
+            return CpgNode(self.storage, whose_id_is)
         except NodeNotFoundError:
             raise
         except Exception as e:
             logger.exception("Unexpected error while finding node with id %s", whose_id_is)
             raise NodeNotFoundError(whose_id_is) from e
 
-    def edge(self, fid: str, tid: str, eid: str) -> Optional[_Edge]:
+    def edge(self, fid: str, tid: str, eid: str) -> Optional[CpgEdge]:
         """
         Returns an edge by its source, target, and edge type.
 
@@ -62,7 +65,7 @@ class _Graph(AbcGraphQuerier):
             EdgeNotFoundError: If edge is not found in the graph
         """
         try:
-            return _Edge(self.storage, fid, tid, eid)
+            return CpgEdge(self.storage, fid, tid, eid)
         except EdgeNotFoundError:
             raise
         except Exception as e:
@@ -72,7 +75,7 @@ class _Graph(AbcGraphQuerier):
             raise EdgeNotFoundError(fid, tid, str(eid)) from e
 
     @functools.lru_cache()
-    def topfile_node(self, of_nid: str) -> _Node:
+    def topfile_node(self, of_nid: str) -> CpgNode:
         """
         Finds the top file node from the input node.
 
@@ -101,7 +104,7 @@ class _Graph(AbcGraphQuerier):
         logger.error("Cannot find top file node from node %s", of_nid)
         raise TopFileNotFoundError(of_nid)
 
-    def succ(self, of: _Node, who_satisifies: __EdgeCondition = __always_true) -> Iterable[_Node]:
+    def succ(self, of: CpgNode, who_satisifies: __EdgeCondition = __always_true) -> Iterable[CpgNode]:
         """
         Returns successor nodes connected to the input node.
 
@@ -109,12 +112,12 @@ class _Graph(AbcGraphQuerier):
             of: Source node
             who_satisifies: Optional edge condition filter
 
-        Returns:
-            Iterable of successor nodes
+        Yields:
+            Successor nodes matching the condition
         """
         return super().succ(of, who_satisifies)
 
-    def prev(self, of: _Node, who_satisifies: __EdgeCondition = __always_true) -> Iterable[_Node]:
+    def prev(self, of: CpgNode, who_satisifies: __EdgeCondition = __always_true) -> Iterable[CpgNode]:
         """
         Returns predecessor nodes connected to the input node.
 
@@ -122,12 +125,12 @@ class _Graph(AbcGraphQuerier):
             of: Target node
             who_satisifies: Optional edge condition filter
 
-        Returns:
-            Iterable of predecessor nodes
+        Yields:
+            Predecessor nodes matching the condition
         """
         return super().prev(of, who_satisifies)
 
-    def children(self, of: _Node, extra: __EdgeCondition = __always_true) -> Iterable[_Node]:
+    def children(self, of: CpgNode, extra: __EdgeCondition = __always_true) -> Iterable[CpgNode]:
         """
         Returns child nodes connected via PARENT_OF edges.
 
@@ -140,7 +143,7 @@ class _Graph(AbcGraphQuerier):
         """
         return self.succ(of, lambda e: extra(e) and (e.type == "PARENT_OF"))
 
-    def parent(self, of: _Node, extra: __EdgeCondition = __always_true) -> Iterable[_Node]:
+    def parent(self, of: CpgNode, extra: __EdgeCondition = __always_true) -> Iterable[CpgNode]:
         """
         Returns parent nodes connected via PARENT_OF edges.
 
@@ -153,7 +156,7 @@ class _Graph(AbcGraphQuerier):
         """
         return self.prev(of, lambda e: extra(e) and (e.type == "PARENT_OF"))
 
-    def flow_to(self, of: _Node, extra: __EdgeCondition = __always_true) -> Iterable[_Node]:
+    def flow_to(self, of: CpgNode, extra: __EdgeCondition = __always_true) -> Iterable[CpgNode]:
         """
         Returns successor nodes connected via FLOWS_TO edges.
 
@@ -166,7 +169,7 @@ class _Graph(AbcGraphQuerier):
         """
         return self.succ(of, lambda e: extra(e) and (e.type == "FLOWS_TO"))
 
-    def flow_from(self, of: _Node, extra: __EdgeCondition = __always_true) -> Iterable[_Node]:
+    def flow_from(self, of: CpgNode, extra: __EdgeCondition = __always_true) -> Iterable[CpgNode]:
         """
         Returns predecessor nodes connected via FLOWS_TO edges.
 
