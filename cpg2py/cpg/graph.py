@@ -1,97 +1,180 @@
-
 from __future__ import annotations
 
+import functools
+from typing import Callable, Iterable, Optional
+
+from ..abc import AbcGraphQuerier, Storage
+from ..exceptions import EdgeNotFoundError, NodeNotFoundError, TopFileNotFoundError
+from ..logger import get_logger
 from .edge import _Edge
 from .node import _Node
-from ..abc import AbcGraphQuerier, Storage 
 
-from typing import Callable, Iterable, Optional
-import json, functools
+logger = get_logger(__name__)
 
-class _Graph(AbcGraphQuerier): 
-    '''
-    OPG is Object Property Diagram used by ODgen and FAST
-    '''
+
+class _Graph(AbcGraphQuerier):
+    """
+    Graph implementation for Object Property Diagram (OPG) used by ODgen and FAST.
+
+    Provides concrete implementation of graph query operations for CPG data.
+    """
+
     __EdgeCondition = Callable[[_Edge], bool]
     __always_true = lambda _: True
 
     def __init__(self, target: Storage) -> None:
         super().__init__(target)
-        return None
 
     def node(self, whose_id_is: str) -> Optional[_Node]:
-        try: 
+        """
+        Returns a node by its ID.
+
+        Args:
+            whose_id_is: Node ID to look up
+
+        Returns:
+            Node instance if found
+
+        Raises:
+            NodeNotFoundError: If node is not found in the graph
+        """
+        try:
             return _Node(self.storage, whose_id_is)
-        except Exception as e: print(
-            f'✘ {_Graph} ERROR:'
-            f'Cannot find node with id {whose_id_is}.'
-            f'(exception is {e})'
-        )
-        return None
-    
-    def edge(self, fid: str, tid: str, eid:str) -> Optional[_Edge]: 
-        try: 
+        except NodeNotFoundError:
+            raise
+        except Exception as e:
+            logger.exception("Unexpected error while finding node with id %s", whose_id_is)
+            raise NodeNotFoundError(whose_id_is) from e
+
+    def edge(self, fid: str, tid: str, eid: str) -> Optional[_Edge]:
+        """
+        Returns an edge by its source, target, and edge type.
+
+        Args:
+            fid: Source node ID
+            tid: Target node ID
+            eid: Edge type/ID
+
+        Returns:
+            Edge instance if found
+
+        Raises:
+            EdgeNotFoundError: If edge is not found in the graph
+        """
+        try:
             return _Edge(self.storage, fid, tid, eid)
-        except Exception as e: print(
-            f'✘ {_Graph} ERROR:'
-            f'Cannot find edge from {fid} to {tid}, and eid is {str(eid)}.'
-            f'(exception is {e})'
-        )
-        return None
-    
+        except EdgeNotFoundError:
+            raise
+        except Exception as e:
+            logger.exception(
+                "Unexpected error while finding edge from %s to %s, eid is %s", fid, tid, eid
+            )
+            raise EdgeNotFoundError(fid, tid, str(eid)) from e
+
     @functools.lru_cache()
-    def topfile_node(self, of_nid: str) -> _Node: 
-        '''
-        find the top file node from the input node.
-        '''
+    def topfile_node(self, of_nid: str) -> _Node:
+        """
+        Finds the top file node from the input node.
+
+        Args:
+            of_nid: Starting node ID
+
+        Returns:
+            Top file node
+
+        Raises:
+            TopFileNotFoundError: If top file node cannot be found
+            NodeNotFoundError: If starting node is not found
+        """
         of_node = self.node(of_nid)
-        if of_node.type == "File": return of_node
-        if 'TOPLEVEL_FILE' in of_node.flags: return of_node
+        if of_node.type == "File":
+            return of_node
+        if "TOPLEVEL_FILE" in of_node.flags:
+            return of_node
         parents = self.prev(of_node, lambda e: e.type in ["PARENT_OF", "ENTRY", "EXIT"])
-        for pre in parents: 
-            top_file = self.topfile_node(pre.id)
-            if top_file is not None: return top_file
-        raise Exception(f'❌ INNER ERROR(500): CANNOT FIND THE TOPFILE.')
-    
-    def succ(self, of: _Node, who_satisifies: __EdgeCondition = __always_true) -> Iterable[_Node]: 
-        '''
-        return the next nodes connected with the input one.
-        '''
-        return super().succ(of.id, who_satisifies)
-    
-    def prev(self, of, who_satisifies = __always_true) -> Iterable[_Node]:
-        '''
-        return the previous nodes connected with the input one.
-        '''
+        for pre in parents:
+            try:
+                top_file = self.topfile_node(pre.id)
+                return top_file
+            except TopFileNotFoundError:
+                continue
+        logger.error("Cannot find top file node from node %s", of_nid)
+        raise TopFileNotFoundError(of_nid)
+
+    def succ(self, of: _Node, who_satisifies: __EdgeCondition = __always_true) -> Iterable[_Node]:
+        """
+        Returns successor nodes connected to the input node.
+
+        Args:
+            of: Source node
+            who_satisifies: Optional edge condition filter
+
+        Returns:
+            Iterable of successor nodes
+        """
+        return super().succ(of, who_satisifies)
+
+    def prev(self, of: _Node, who_satisifies: __EdgeCondition = __always_true) -> Iterable[_Node]:
+        """
+        Returns predecessor nodes connected to the input node.
+
+        Args:
+            of: Target node
+            who_satisifies: Optional edge condition filter
+
+        Returns:
+            Iterable of predecessor nodes
+        """
         return super().prev(of, who_satisifies)
 
+    def children(self, of: _Node, extra: __EdgeCondition = __always_true) -> Iterable[_Node]:
+        """
+        Returns child nodes connected via PARENT_OF edges.
 
-    def children(self, of: _Node, extra: __EdgeCondition = __always_true) -> Iterable[_Node]: 
-        '''
-        return the next nodes connected with the input one.
-        The edge type between them is PARENT_OF 
-        '''
+        Args:
+            of: Parent node
+            extra: Additional edge condition filter
+
+        Returns:
+            Iterable of child nodes
+        """
         return self.succ(of, lambda e: extra(e) and (e.type == "PARENT_OF"))
 
-    def parent(self, of: _Node, extra:__EdgeCondition = __always_true) -> Iterable[_Node]: 
-        '''
-        return the prev nodes connected with the input one.
-        The edge type between them is PARENT_OF 
-        '''
+    def parent(self, of: _Node, extra: __EdgeCondition = __always_true) -> Iterable[_Node]:
+        """
+        Returns parent nodes connected via PARENT_OF edges.
+
+        Args:
+            of: Child node
+            extra: Additional edge condition filter
+
+        Returns:
+            Iterable of parent nodes
+        """
         return self.prev(of, lambda e: extra(e) and (e.type == "PARENT_OF"))
 
-    def flow_to(self, of: _Node, extra: __EdgeCondition = __always_true) -> Iterable[_Node]: 
-        '''
-        return the next nodes connected with the input one.
-        The edge type between them is FLOW_TO 
-        '''
+    def flow_to(self, of: _Node, extra: __EdgeCondition = __always_true) -> Iterable[_Node]:
+        """
+        Returns successor nodes connected via FLOWS_TO edges.
+
+        Args:
+            of: Source node
+            extra: Additional edge condition filter
+
+        Returns:
+            Iterable of flow successor nodes
+        """
         return self.succ(of, lambda e: extra(e) and (e.type == "FLOWS_TO"))
 
     def flow_from(self, of: _Node, extra: __EdgeCondition = __always_true) -> Iterable[_Node]:
-        '''
-        return the previous nodes connected with the input one.
-        The edge type between them is FLOW_TO 
-        '''
+        """
+        Returns predecessor nodes connected via FLOWS_TO edges.
+
+        Args:
+            of: Target node
+            extra: Additional edge condition filter
+
+        Returns:
+            Iterable of flow predecessor nodes
+        """
         return self.prev(of, lambda e: extra(e) and (e.type == "FLOWS_TO"))
-    
-pass

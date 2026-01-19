@@ -22,10 +22,34 @@
 
 ## **📚 Installation**
 
+### Using pip
+
 To install the package, use:
 
 ```bash
 pip install git+https://github.com/YichaoXu/cpg2py.git
+```
+
+### Using uv (Recommended)
+
+This project uses [uv](https://github.com/astral-sh/uv) for fast and reliable package management.
+
+**Install uv:**
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+**Clone and install:**
+```bash
+git clone https://github.com/YichaoXu/cpg2py.git
+cd cpg2py
+uv sync --dev  # Install with dev dependencies
+```
+
+**For development:**
+```bash
+uv sync --dev
+uv run pytest tests/  # Run tests
 ```
 
 Or clone the pip repository:
