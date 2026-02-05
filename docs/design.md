@@ -73,7 +73,7 @@ for node in graph.nodes(lambda n: n.type == "Function"):
 ```
 
 ### **AbcNodeQuerier Class**
-- **Responsibility**: Provides abstract interface for node property access and queries
+- **Responsibility**: Provides abstract interface for node property access, queries, and updates
 - **Properties**: 
   - `node_id: str` - Returns the node identifier
   - `properties: Optional[Dict[str, Any]]` - Returns all node properties dictionary
@@ -86,6 +86,14 @@ for node in graph.nodes(lambda n: n.type == "Function"):
   - **Behavior**: Returns first found property value trying multiple name alternatives
   - **Input**: Variable number of property name alternatives
   - **Output**: Property value or None if not found
+- **[set_property(key: str, value: Any) -> bool]**
+  - **Behavior**: Sets single node property value
+  - **Input**: Property key, property value
+  - **Output**: True if property was set, False if node does not exist
+- **[set_properties(props: Dict[str, Any]) -> bool]**
+  - **Behavior**: Updates multiple node properties at once
+  - **Input**: Dictionary of property key-value pairs
+  - **Output**: True if properties were updated, False if node does not exist
 - **Example Usage**:
 ```python
 class MyNode(AbcNodeQuerier):
@@ -95,25 +103,35 @@ class MyNode(AbcNodeQuerier):
 
 node = MyNode(storage, "123")
 print(node.node_id, node.name)
+node.set_property("name", "new_name")
+node.set_properties({"age": 25, "city": "NYC"})
 ```
 
 ### **AbcEdgeQuerier Class**
-- **Responsibility**: Provides abstract interface for edge property access and queries
+- **Responsibility**: Provides abstract interface for edge property access, queries, and updates
 - **Properties**: 
-  - `edge_id: Tuple[str, str, int]` - Returns edge identifier tuple
+  - `edge_id: Tuple[str, str, str]` - Returns edge identifier tuple
   - `from_nid: str` - Returns source node identifier
   - `to_nid: str` - Returns target node identifier
   - `edge_type: str` - Returns edge type string
   - `properties: Optional[Dict[str, Any]]` - Returns all edge properties dictionary
-- **[__init__(graph: Storage, f_nid: str, t_nid: str, e_type: int = 0) -> None]**
+- **[__init__(graph: Storage, f_nid: str, t_nid: str, e_type: str) -> None]**
   - **Behavior**: Initializes edge querier and validates edge existence
-  - **Input**: Storage instance, source node ID, target node ID, edge type
+  - **Input**: Storage instance, source node ID, target node ID, edge type string
   - **Output**: None
   - **Raises**: `EdgeNotFoundError` if edge does not exist
 - **[get_property(*prop_names: str) -> Optional[Any]]**
   - **Behavior**: Returns first found property value trying multiple name alternatives
   - **Input**: Variable number of property name alternatives
   - **Output**: Property value or None if not found
+- **[set_property(key: str, value: Any) -> bool]**
+  - **Behavior**: Sets single edge property value
+  - **Input**: Property key, property value
+  - **Output**: True if property was set, False if edge does not exist
+- **[set_properties(props: Dict[str, Any]) -> bool]**
+  - **Behavior**: Updates multiple edge properties at once
+  - **Input**: Dictionary of property key-value pairs
+  - **Output**: True if properties were updated, False if edge does not exist
 - **Example Usage**:
 ```python
 class MyEdge(AbcEdgeQuerier):
@@ -123,6 +141,8 @@ class MyEdge(AbcEdgeQuerier):
 
 edge = MyEdge(storage, "1", "2", "CONNECTS")
 print(edge.from_nid, edge.to_nid, edge.edge_type)
+edge.set_property("weight", 0.5)
+edge.set_properties({"color": "red", "style": "dashed"})
 ```
 
 ### **Storage Class**
@@ -212,6 +232,16 @@ print(edge.from_nid, edge.to_nid, edge.edge_type)
   - **Behavior**: Removes edge from graph
   - **Input**: Edge identifier tuple
   - **Output**: True if removed, False if not found
+- **[save_json(path: Union[Path, str]) -> None]**
+  - **Behavior**: Serializes the graph (nodes and edges with properties) to a JSON file at the given path
+  - **Input**: File path (Path or str)
+  - **Output**: None
+  - **Raises**: File I/O errors if the file cannot be written
+- **[load_json(path: Union[Path, str]) -> None]**
+  - **Behavior**: Replaces the current graph with the contents of the given JSON file; clears existing nodes and edges then loads nodes, edges, and their properties
+  - **Input**: File path (Path or str)
+  - **Output**: None
+  - **Raises**: File I/O errors if the file cannot be read; ValueError or KeyError if JSON format is invalid
 - **Example Usage**:
 ```python
 storage = Storage()
@@ -219,6 +249,8 @@ storage.add_node("1")
 storage.set_node_prop("1", "name", "test")
 storage.add_edge(("1", "2", "CONNECTS"))
 edges = list(storage.out_edges("1"))
+storage.save_json("graph.json")
+storage.load_json("graph.json")
 ```
 
 ### **_Graph Class**
@@ -315,6 +347,19 @@ print(edge.from_nid, edge.to_nid, edge.type)
 
 ## Function Specifications
 
+### **[storage_from_json(path: Union[Path, str]) -> Storage]**
+- **Responsibility**: Creates a Storage instance populated from a JSON file
+- **Behavior**: Reads the JSON file, parses nodes and edges with properties, returns a new Storage containing that graph
+- **Input**: Path to JSON file (Path or str)
+- **Output**: New Storage instance
+- **Raises**: File I/O errors if the file cannot be read; ValueError or KeyError if JSON format is invalid
+- **Example Usage**:
+```python
+from pathlib import Path
+storage = storage_from_json(Path("graph.json"))
+graph = _Graph(storage)
+```
+
 ### **[cpg_graph(node_csv: Path, edge_csv: Path, verbose: bool = False) -> _Graph]**
 - **Responsibility**: Creates CPG graph instance from Joern CSV files
 - **Behavior**: Reads tab-delimited CSV files, parses nodes and edges, populates storage, returns graph instance
@@ -346,15 +391,25 @@ node = graph.node("123")
 - Edge addition requires both source and target nodes to exist
 - Property keys are converted to strings before storage
 
+**JSON persistence format** (for save_json / load_json and storage_from_json):
+- File is UTF-8 encoded JSON with two top-level keys: `"nodes"` and `"edges"`.
+- `"nodes"`: object mapping node ID (string) to a properties object (string keys, JSON-serializable values).
+- `"edges"`: array of edge objects; each has string keys `"from"`, `"to"`, `"type"` and optionally `"props"` (object). Property values must be JSON-serializable.
+- Example: `{"nodes": {"1": {"name": "a"}, "2": {}}, "edges": [{"from": "1", "to": "2", "type": "CONNECTS", "props": {}}]}`
+- save_json writes this format; load_json and storage_from_json expect it and reject missing or malformed structure.
+
 **Node Querier Validation**:
 - Node existence is validated during initialization
 - Node identifier is converted to string
 - Property access returns None for missing properties
+- Property updates return False if node does not exist
 
 **Edge Querier Validation**:
 - Edge existence is validated during initialization
 - Edge identifier components are converted to strings
+- Edge type must be provided as string (not integer)
 - Property access returns None for missing properties
+- Property updates return False if edge does not exist
 
 **Graph Querier Validation**:
 - Storage instance must be provided during initialization

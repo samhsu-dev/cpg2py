@@ -1,12 +1,34 @@
 from csv import DictReader
 from pathlib import Path
+from typing import Union
 
-from ._abc import *
-from ._cpg import CpgGraph, CpgNode, CpgEdge
+from ._abc import Storage
+from ._abc import AbcEdgeQuerier, AbcGraphQuerier, AbcNodeQuerier
+from ._cpg import CpgEdge, CpgGraph, CpgNode
 from ._exceptions import CPGError, EdgeNotFoundError, NodeNotFoundError, TopFileNotFoundError
 from ._logger import get_logger
 
 logger = get_logger(__name__)
+
+
+def storage_from_json(path: Union[Path, str]) -> Storage:
+    """
+    Creates a Storage instance populated from a JSON file.
+
+    Args:
+        path: Path to JSON file (Path or str).
+
+    Returns:
+        New Storage instance containing the graph.
+
+    Raises:
+        OSError: If the file cannot be read.
+        ValueError: If JSON structure is invalid (missing "nodes" or "edges").
+        KeyError: If an edge object is missing "from", "to", or "type".
+    """
+    storage = Storage()
+    storage.load_json(path)
+    return storage
 
 
 def cpg_graph(node_csv: Path, edge_csv: Path, verbose: bool = False) -> CpgGraph:
@@ -66,6 +88,7 @@ def cpg_graph(node_csv: Path, edge_csv: Path, verbose: bool = False) -> CpgGraph
 
 __all__ = [
     "cpg_graph",
+    "storage_from_json",
     "CpgGraph",
     "CpgNode",
     "CpgEdge",

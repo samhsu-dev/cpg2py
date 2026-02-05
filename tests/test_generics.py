@@ -1,8 +1,9 @@
 """
 Unit tests for generic type functionality.
 """
+from __future__ import annotations
+
 import pytest
-from typing import get_args, get_origin
 
 from cpg2py._abc import AbcGraphQuerier, Storage
 from cpg2py._cpg import CpgEdge, CpgGraph, CpgNode
@@ -12,7 +13,7 @@ from cpg2py._cpg import CpgEdge, CpgGraph, CpgNode
 class TestGenerics:
     """Test cases for generic type functionality."""
 
-    def test_graph_is_generic_subclass(self, storage):
+    def test_graph_is_generic_subclass(self, storage: Storage) -> None:
         """
         Tests that CpgGraph is a generic subclass of AbcGraphQuerier.
 
@@ -24,7 +25,9 @@ class TestGenerics:
         assert isinstance(graph, AbcGraphQuerier)
         assert isinstance(graph, CpgGraph)
 
-    def test_graph_node_returns_concrete_node_type(self, graph, storage):
+    def test_graph_node_returns_concrete_node_type(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that graph.node returns CpgNode type (not just AbcNodeQuerier).
 
@@ -38,7 +41,9 @@ class TestGenerics:
         assert isinstance(node, CpgNode)
         assert isinstance(node, type(node))  # Type consistency
 
-    def test_graph_edge_returns_concrete_edge_type(self, graph, storage):
+    def test_graph_edge_returns_concrete_edge_type(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that graph.edge returns CpgEdge type (not just AbcEdgeQuerier).
 
@@ -53,64 +58,59 @@ class TestGenerics:
         assert edge is not None
         assert isinstance(edge, CpgEdge)
 
-    def test_graph_succ_returns_concrete_node_types(self, graph, storage):
+    def test_graph_succ_returns_concrete_node_types(
+        self, populated_graph: CpgGraph
+    ) -> None:
         """
         Tests that graph.succ returns Iterable[CpgNode] with correct types.
 
-        Arrange: Storage with nodes and edges
+        Arrange: Graph with nodes and edges
         Act: Get successors and check types
         Assert: All successors are CpgNode instances
         """
-        storage.add_node("node1")
-        storage.add_node("node2")
-        storage.add_node("node3")
-        storage.add_edge(("node1", "node2", "TYPE1"))
-        storage.add_edge(("node1", "node3", "TYPE2"))
-        node1 = graph.node("node1")
-        successors = list(graph.succ(node1))
+        node1 = populated_graph.node("node1")
+        successors = list(populated_graph.succ(node1))
         assert len(successors) == 2
         for succ in successors:
             assert isinstance(succ, CpgNode)
-            assert hasattr(succ, "code")  # CpgNode-specific property
+            assert hasattr(succ, "code")
 
-    def test_graph_prev_returns_concrete_node_types(self, graph, storage):
+    def test_graph_prev_returns_concrete_node_types(
+        self, populated_graph: CpgGraph
+    ) -> None:
         """
         Tests that graph.prev returns Iterable[CpgNode] with correct types.
 
-        Arrange: Storage with nodes and edges
+        Arrange: Graph with nodes and edges
         Act: Get predecessors and check types
         Assert: All predecessors are CpgNode instances
         """
-        storage.add_node("node1")
-        storage.add_node("node2")
-        storage.add_node("node3")
-        storage.add_edge(("node1", "node2", "TYPE1"))
-        storage.add_edge(("node3", "node2", "TYPE2"))
-        node2 = graph.node("node2")
-        predecessors = list(graph.prev(node2))
+        node2 = populated_graph.node("node2")
+        predecessors = list(populated_graph.prev(node2))
         assert len(predecessors) == 2
         for pred in predecessors:
             assert isinstance(pred, CpgNode)
-            assert hasattr(pred, "code")  # CpgNode-specific property
+            assert hasattr(pred, "code")
 
-    def test_graph_nodes_returns_concrete_node_types(self, graph, storage):
+    def test_graph_nodes_returns_concrete_node_types(
+        self, populated_graph: CpgGraph
+    ) -> None:
         """
         Tests that graph.nodes returns Iterable[CpgNode] with correct types.
 
-        Arrange: Storage with multiple nodes
+        Arrange: Graph with multiple nodes
         Act: Get all nodes and check types
         Assert: All nodes are CpgNode instances
         """
-        storage.add_node("node1")
-        storage.add_node("node2")
-        storage.add_node("node3")
-        nodes = list(graph.nodes())
+        nodes = list(populated_graph.nodes())
         assert len(nodes) == 3
         for node in nodes:
             assert isinstance(node, CpgNode)
-            assert hasattr(node, "code")  # CpgNode-specific property
+            assert hasattr(node, "code")
 
-    def test_graph_edges_returns_concrete_edge_types(self, graph, storage):
+    def test_graph_edges_returns_concrete_edge_types(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that graph.edges returns Iterable[CpgEdge] with correct types.
 
@@ -129,7 +129,9 @@ class TestGenerics:
             assert isinstance(edge, CpgEdge)
             assert hasattr(edge, "type")  # CpgEdge-specific property
 
-    def test_graph_descendants_returns_concrete_node_types(self, graph, storage):
+    def test_graph_descendants_returns_concrete_node_types(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that graph.descendants returns Iterable[CpgNode] with correct types.
 
@@ -150,7 +152,9 @@ class TestGenerics:
         for desc in descendants:
             assert isinstance(desc, CpgNode)
 
-    def test_graph_ancestors_returns_concrete_node_types(self, graph, storage):
+    def test_graph_ancestors_returns_concrete_node_types(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that graph.ancestors returns Iterable[CpgNode] with correct types.
 
@@ -169,21 +173,23 @@ class TestGenerics:
         for anc in ancestors:
             assert isinstance(anc, CpgNode)
 
-    def test_graph_first_node_returns_concrete_node_type(self, graph, storage):
+    def test_graph_first_node_returns_concrete_node_type(
+        self, populated_graph: CpgGraph
+    ) -> None:
         """
         Tests that graph.first_node returns CpgNode type.
 
-        Arrange: Storage with nodes
+        Arrange: Graph with nodes
         Act: Get first node and check type
-        Assert: Returns CpgNode instance or None
+        Assert: Returns CpgNode instance
         """
-        storage.add_node("node1")
-        storage.add_node("node2")
-        first_node = graph.first_node()
+        first_node = populated_graph.first_node()
         assert first_node is not None
         assert isinstance(first_node, CpgNode)
 
-    def test_graph_first_node_returns_none_when_empty(self, graph):
+    def test_graph_first_node_returns_none_when_empty(
+        self, graph: CpgGraph
+    ) -> None:
         """
         Tests that graph.first_node returns None when graph is empty.
 

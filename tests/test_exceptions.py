@@ -1,6 +1,8 @@
 """
 Unit tests for custom exceptions.
 """
+from typing import List
+
 import pytest
 
 from cpg2py._exceptions import (
@@ -15,7 +17,7 @@ from cpg2py._exceptions import (
 class TestExceptions:
     """Test cases for custom exceptions."""
 
-    def test_cpg_error_inherits_from_exception(self):
+    def test_cpg_error_inherits_from_exception(self) -> None:
         """
         Tests that CPGError inherits from Exception.
 
@@ -25,7 +27,23 @@ class TestExceptions:
         """
         assert issubclass(CPGError, Exception)
 
-    def test_node_not_found_error_inherits_from_cpg_error(self):
+    def test_exception_instances_catchable_as_cpg_error(self) -> None:
+        """
+        Tests that concrete exception instances can be caught as CPGError.
+
+        Arrange: Raise NodeNotFoundError
+        Act: except CPGError
+        Assert: Caught and has correct node_id
+        """
+        caught: List[CPGError] = []
+        try:
+            raise NodeNotFoundError("n1")
+        except CPGError as e:
+            caught.append(e)
+        assert len(caught) == 1
+        assert caught[0].node_id == "n1"
+
+    def test_node_not_found_error_inherits_from_cpg_error(self) -> None:
         """
         Tests that NodeNotFoundError inherits from CPGError.
 
@@ -35,7 +53,7 @@ class TestExceptions:
         """
         assert issubclass(NodeNotFoundError, CPGError)
 
-    def test_node_not_found_error_default_message_contains_node_id(self):
+    def test_node_not_found_error_default_message_contains_node_id(self) -> None:
         """
         Tests NodeNotFoundError with default message.
 
@@ -47,7 +65,7 @@ class TestExceptions:
         assert str(error) == "Node with id 'node1' not found in graph"
         assert error.node_id == "node1"
 
-    def test_node_not_found_error_custom_message_uses_provided_message(self):
+    def test_node_not_found_error_custom_message_uses_provided_message(self) -> None:
         """
         Tests NodeNotFoundError with custom message.
 
@@ -59,7 +77,18 @@ class TestExceptions:
         assert str(error) == "Custom error message"
         assert error.node_id == "node1"
 
-    def test_edge_not_found_error_inherits_from_cpg_error(self):
+    def test_node_not_found_error_empty_node_id_attribute_set(self) -> None:
+        """
+        Tests NodeNotFoundError with empty string node_id still sets attribute.
+
+        Arrange: None
+        Act: Create error with empty node_id
+        Assert: node_id attribute is ""
+        """
+        error = NodeNotFoundError("")
+        assert error.node_id == ""
+
+    def test_edge_not_found_error_inherits_from_cpg_error(self) -> None:
         """
         Tests that EdgeNotFoundError inherits from CPGError.
 
@@ -69,7 +98,7 @@ class TestExceptions:
         """
         assert issubclass(EdgeNotFoundError, CPGError)
 
-    def test_edge_not_found_error_default_message_contains_edge_info(self):
+    def test_edge_not_found_error_default_message_contains_edge_info(self) -> None:
         """
         Tests EdgeNotFoundError with default message.
 
@@ -83,7 +112,7 @@ class TestExceptions:
         assert error.to_id == "node2"
         assert error.edge_type == "TYPE"
 
-    def test_edge_not_found_error_custom_message_uses_provided_message(self):
+    def test_edge_not_found_error_custom_message_uses_provided_message(self) -> None:
         """
         Tests EdgeNotFoundError with custom message.
 
@@ -97,7 +126,7 @@ class TestExceptions:
         assert error.to_id == "node2"
         assert error.edge_type == "TYPE"
 
-    def test_top_file_not_found_error_inherits_from_cpg_error(self):
+    def test_top_file_not_found_error_inherits_from_cpg_error(self) -> None:
         """
         Tests that TopFileNotFoundError inherits from CPGError.
 
@@ -107,7 +136,7 @@ class TestExceptions:
         """
         assert issubclass(TopFileNotFoundError, CPGError)
 
-    def test_top_file_not_found_error_default_message_contains_node_id(self):
+    def test_top_file_not_found_error_default_message_contains_node_id(self) -> None:
         """
         Tests TopFileNotFoundError with default message.
 
@@ -119,7 +148,7 @@ class TestExceptions:
         assert str(error) == "Cannot find top file node from node 'node1'"
         assert error.node_id == "node1"
 
-    def test_top_file_not_found_error_custom_message_uses_provided_message(self):
+    def test_top_file_not_found_error_custom_message_uses_provided_message(self) -> None:
         """
         Tests TopFileNotFoundError with custom message.
 

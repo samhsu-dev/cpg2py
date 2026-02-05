@@ -1,6 +1,6 @@
-"""
-Custom exceptions for cpg2py package.
-"""
+"""Custom exceptions for cpg2py package."""
+
+from typing import Optional
 
 
 class CPGError(Exception):
@@ -8,9 +8,9 @@ class CPGError(Exception):
 
 
 class NodeNotFoundError(CPGError):
-    """Raised when a node cannot be found in the graph."""
+    """Raised when node identifier does not exist in storage."""
 
-    def __init__(self, node_id: str, message: str = None):
+    def __init__(self, node_id: str, message: Optional[str] = None) -> None:
         self.node_id = node_id
         if message is None:
             message = f"Node with id '{node_id}' not found in graph"
@@ -18,9 +18,11 @@ class NodeNotFoundError(CPGError):
 
 
 class EdgeNotFoundError(CPGError):
-    """Raised when an edge cannot be found in the graph."""
+    """Raised when edge identifier tuple does not exist in storage."""
 
-    def __init__(self, from_id: str, to_id: str, edge_type: str, message: str = None):
+    def __init__(
+        self, from_id: str, to_id: str, edge_type: str, message: Optional[str] = None
+    ) -> None:
         self.from_id = from_id
         self.to_id = to_id
         self.edge_type = edge_type
@@ -32,9 +34,9 @@ class EdgeNotFoundError(CPGError):
 
 
 class TopFileNotFoundError(CPGError):
-    """Raised when top file node cannot be found."""
+    """Raised when top file node cannot be found during upward traversal."""
 
-    def __init__(self, node_id: str, message: str = None):
+    def __init__(self, node_id: str, message: Optional[str] = None) -> None:
         self.node_id = node_id
         if message is None:
             message = f"Cannot find top file node from node '{node_id}'"

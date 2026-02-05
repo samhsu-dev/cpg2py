@@ -35,9 +35,9 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/YichaoXu/cpg2py"
-Repository = "https://github.com/YichaoXu/cpg2py"
-Documentation = "https://github.com/YichaoXu/cpg2py"
+Homepage = "https://github.com/samhsu-dev/cpg2py"
+Repository = "https://github.com/samhsu-dev/cpg2py"
+Documentation = "https://github.com/samhsu-dev/cpg2py"
 
 [tool.setuptools]
 packages = ["cpg2py", "cpg2py._abc", "cpg2py._cpg"]
@@ -80,6 +80,7 @@ disable = [
     "too-many-arguments",
     "too-many-instance-attributes",
     "too-many-public-methods",
+    "redefined-outer-name",
 ]
 
 [tool.pylint.format]

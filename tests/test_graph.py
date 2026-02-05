@@ -1,8 +1,13 @@
 """
 Unit and integration tests for Graph class and cpg_graph factory.
 """
+from __future__ import annotations
+
+from pathlib import Path
+
 import pytest
 
+from cpg2py import cpg_graph
 from cpg2py._abc import Storage
 from cpg2py._cpg import CpgGraph
 from cpg2py._exceptions import EdgeNotFoundError, NodeNotFoundError, TopFileNotFoundError
@@ -12,19 +17,20 @@ from cpg2py._exceptions import EdgeNotFoundError, NodeNotFoundError, TopFileNotF
 class TestGraph:
     """Unit tests for Graph class."""
 
-    def test_graph_init_creates_graph_with_storage(self, storage):
+    def test_graph_init_creates_graph_with_storage(self, storage: Storage) -> None:
         """
         Tests that Graph initialization creates graph with storage.
 
         Arrange: Storage instance
         Act: Create Graph with storage
-        Assert: Graph is created and storage is accessible
+        Assert: Storage is accessible on graph
         """
         graph = CpgGraph(storage)
-        assert graph is not None
         assert graph.storage == storage
 
-    def test_graph_node_returns_node_when_exists(self, graph: CpgGraph, storage: Storage):
+    def test_graph_node_returns_node_when_exists(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that graph.node returns node when it exists.
 
@@ -38,7 +44,9 @@ class TestGraph:
         assert node is not None
         assert node.id == "node1"
 
-    def test_graph_node_raises_error_when_not_found(self, graph):
+    def test_graph_node_raises_error_when_not_found(
+        self, graph: CpgGraph
+    ) -> None:
         """
         Tests that graph.node raises NodeNotFoundError when node not found.
 
@@ -50,7 +58,23 @@ class TestGraph:
             graph.node("nonexistent")
         assert exc_info.value.node_id == "nonexistent"
 
-    def test_graph_edge_returns_edge_when_exists(self, graph, storage):
+    def test_graph_node_empty_string_id_raises_when_not_in_storage(
+        self, graph: CpgGraph
+    ) -> None:
+        """
+        Tests that graph.node with empty string id raises when node not in storage.
+
+        Arrange: Empty graph (no node "")
+        Act: graph.node("")
+        Assert: NodeNotFoundError with node_id ""
+        """
+        with pytest.raises(NodeNotFoundError) as exc_info:
+            graph.node("")
+        assert exc_info.value.node_id == ""
+
+    def test_graph_edge_returns_edge_when_exists(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that graph.edge returns edge when it exists.
 
@@ -66,7 +90,9 @@ class TestGraph:
         assert edge is not None
         assert edge.id == edge_id
 
-    def test_graph_edge_raises_error_when_not_found(self, graph, storage):
+    def test_graph_edge_raises_error_when_not_found(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that graph.edge raises EdgeNotFoundError when edge not found.
 
@@ -82,47 +108,95 @@ class TestGraph:
         assert exc_info.value.to_id == "node2"
         assert exc_info.value.edge_type == "TYPE"
 
-    def test_graph_succ_returns_successor_nodes(self, graph, storage):
+    def test_graph_nodes_empty_graph_returns_empty_iterable(
+        self, graph: CpgGraph
+    ) -> None:
+        """
+        Tests that graph.nodes on empty graph returns empty iterable.
+
+        Arrange: Empty graph
+        Act: nodes()
+        Assert: Empty list
+        """
+        assert list(graph.nodes()) == []
+
+    def test_graph_edges_empty_graph_returns_empty_iterable(
+        self, graph: CpgGraph
+    ) -> None:
+        """
+        Tests that graph.edges on empty graph returns empty iterable.
+
+        Arrange: Empty graph
+        Act: edges()
+        Assert: Empty list
+        """
+        assert list(graph.edges()) == []
+
+    def test_graph_succ_returns_successor_nodes(
+        self, populated_graph: CpgGraph
+    ) -> None:
         """
         Tests that graph.succ returns successor nodes.
 
-        Arrange: Storage with nodes and outgoing edges
+        Arrange: Graph with nodes and outgoing edges
         Act: Get successors of a node
         Assert: Returns all successor nodes
         """
-        storage.add_node("node1")
-        storage.add_node("node2")
-        storage.add_node("node3")
-        storage.add_edge(("node1", "node2", "TYPE1"))
-        storage.add_edge(("node1", "node3", "TYPE2"))
-        node1 = graph.node("node1")
-        successors = list(graph.succ(node1))
+        node1 = populated_graph.node("node1")
+        successors = list(populated_graph.succ(node1))
         assert len(successors) == 2
         successor_ids = [n.id for n in successors]
         assert "node2" in successor_ids
         assert "node3" in successor_ids
 
-    def test_graph_prev_returns_predecessor_nodes(self, graph, storage):
+    def test_graph_succ_no_outgoing_edges_returns_empty(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
+        """
+        Tests that succ for node with no outgoing edges returns empty iterable.
+
+        Arrange: Node with no outgoing edges
+        Act: succ(node)
+        Assert: Empty list
+        """
+        storage.add_node("leaf")
+        node = graph.node("leaf")
+        assert list(graph.succ(node)) == []
+
+    def test_graph_prev_returns_predecessor_nodes(
+        self, populated_graph: CpgGraph
+    ) -> None:
         """
         Tests that graph.prev returns predecessor nodes.
 
-        Arrange: Storage with nodes and incoming edges
+        Arrange: Graph with nodes and incoming edges
         Act: Get predecessors of a node
         Assert: Returns all predecessor nodes
         """
-        storage.add_node("node1")
-        storage.add_node("node2")
-        storage.add_node("node3")
-        storage.add_edge(("node1", "node2", "TYPE1"))
-        storage.add_edge(("node3", "node2", "TYPE2"))
-        node2 = graph.node("node2")
-        predecessors = list(graph.prev(node2))
+        node2 = populated_graph.node("node2")
+        predecessors = list(populated_graph.prev(node2))
         assert len(predecessors) == 2
         predecessor_ids = [n.id for n in predecessors]
         assert "node1" in predecessor_ids
         assert "node3" in predecessor_ids
 
-    def test_graph_children_returns_child_nodes(self, graph, storage):
+    def test_graph_prev_no_incoming_edges_returns_empty(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
+        """
+        Tests that prev for node with no incoming edges returns empty iterable.
+
+        Arrange: Node with no incoming edges
+        Act: prev(node)
+        Assert: Empty list
+        """
+        storage.add_node("root")
+        node = graph.node("root")
+        assert list(graph.prev(node)) == []
+
+    def test_graph_children_returns_child_nodes(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that graph.children returns child nodes.
 
@@ -146,7 +220,23 @@ class TestGraph:
         assert "child1" in child_ids
         assert "child2" in child_ids
 
-    def test_graph_parent_returns_parent_nodes(self, graph, storage):
+    def test_graph_children_no_children_returns_empty(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
+        """
+        Tests that children for node with no PARENT_OF outgoing edges returns empty.
+
+        Arrange: Node with no children
+        Act: children(node)
+        Assert: Empty list
+        """
+        storage.add_node("leaf")
+        node = graph.node("leaf")
+        assert list(graph.children(node)) == []
+
+    def test_graph_parent_returns_parent_nodes(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that graph.parent returns parent nodes.
 
@@ -164,7 +254,23 @@ class TestGraph:
         assert len(parents) == 1
         assert parents[0].id == "parent"
 
-    def test_graph_flow_to_returns_flow_successors(self, graph, storage):
+    def test_graph_parent_no_parent_returns_empty(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
+        """
+        Tests that parent for root node returns empty iterable.
+
+        Arrange: Node with no PARENT_OF incoming edges
+        Act: parent(node)
+        Assert: Empty list
+        """
+        storage.add_node("root")
+        node = graph.node("root")
+        assert list(graph.parent(node)) == []
+
+    def test_graph_flow_to_returns_flow_successors(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that graph.flow_to returns flow-to successor nodes.
 
@@ -186,7 +292,9 @@ class TestGraph:
         assert len(flow_successors) == 1
         assert flow_successors[0].id == "node2"
 
-    def test_graph_flow_from_returns_flow_predecessors(self, graph, storage):
+    def test_graph_flow_from_returns_flow_predecessors(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that graph.flow_from returns flow-from predecessor nodes.
 
@@ -208,7 +316,37 @@ class TestGraph:
         assert len(flow_predecessors) == 1
         assert flow_predecessors[0].id == "node1"
 
-    def test_graph_topfile_node_returns_file_when_node_is_file(self, graph, storage):
+    def test_graph_flow_to_no_flow_edges_returns_empty(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
+        """
+        Tests that flow_to for node with no FLOWS_TO edges returns empty.
+
+        Arrange: Node with no FLOWS_TO outgoing edges
+        Act: flow_to(node)
+        Assert: Empty list
+        """
+        storage.add_node("n")
+        node = graph.node("n")
+        assert list(graph.flow_to(node)) == []
+
+    def test_graph_flow_from_no_flow_edges_returns_empty(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
+        """
+        Tests that flow_from for node with no FLOWS_TO edges returns empty.
+
+        Arrange: Node with no FLOWS_TO incoming edges
+        Act: flow_from(node)
+        Assert: Empty list
+        """
+        storage.add_node("n")
+        node = graph.node("n")
+        assert list(graph.flow_from(node)) == []
+
+    def test_graph_topfile_node_returns_file_when_node_is_file(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that topfile_node returns file when node is already a File.
 
@@ -221,7 +359,9 @@ class TestGraph:
         top_file = graph.topfile_node("file1")
         assert top_file.id == "file1"
 
-    def test_graph_topfile_node_returns_file_with_toplevel_flag(self, graph, storage):
+    def test_graph_topfile_node_returns_file_with_toplevel_flag(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that topfile_node returns file with TOPLEVEL_FILE flag.
 
@@ -234,7 +374,9 @@ class TestGraph:
         top_file = graph.topfile_node("file1")
         assert top_file.id == "file1"
 
-    def test_graph_topfile_node_returns_file_via_parent(self, graph, storage):
+    def test_graph_topfile_node_returns_file_via_parent(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that topfile_node returns file via parent relationship.
 
@@ -251,7 +393,9 @@ class TestGraph:
         top_file = graph.topfile_node("node1")
         assert top_file.id == "file1"
 
-    def test_graph_topfile_node_raises_error_when_not_found(self, graph, storage):
+    def test_graph_topfile_node_raises_error_when_not_found(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that topfile_node raises TopFileNotFoundError when not found.
 
@@ -265,25 +409,26 @@ class TestGraph:
             graph.topfile_node("node1")
         assert exc_info.value.node_id == "node1"
 
-    def test_graph_nodes_returns_all_nodes(self, graph, storage):
+    def test_graph_nodes_returns_all_nodes(
+        self, populated_graph: CpgGraph
+    ) -> None:
         """
         Tests that graph.nodes returns all nodes.
 
-        Arrange: Storage with multiple nodes
+        Arrange: Graph with multiple nodes
         Act: Get all nodes
         Assert: Returns all nodes
         """
-        storage.add_node("node1")
-        storage.add_node("node2")
-        storage.add_node("node3")
-        nodes = list(graph.nodes())
+        nodes = list(populated_graph.nodes())
         assert len(nodes) == 3
         node_ids = [n.id for n in nodes]
         assert "node1" in node_ids
         assert "node2" in node_ids
         assert "node3" in node_ids
 
-    def test_graph_nodes_with_condition_filters_nodes(self, graph, storage):
+    def test_graph_nodes_with_condition_filters_nodes(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that graph.nodes filters nodes by condition.
 
@@ -299,7 +444,24 @@ class TestGraph:
         assert len(nodes) == 1
         assert nodes[0].id == "node1"
 
-    def test_graph_edges_returns_all_edges(self, graph, storage):
+    def test_graph_nodes_condition_matches_none_returns_empty(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
+        """
+        Tests that nodes with condition that matches no node returns empty.
+
+        Arrange: Storage with nodes
+        Act: nodes(condition that is always False)
+        Assert: Empty list
+        """
+        storage.add_node("node1")
+        storage.set_node_props("node1", {"type": "AST"})
+        nodes = list(graph.nodes(lambda n: n.type == "ImpossibleType"))
+        assert nodes == []
+
+    def test_graph_edges_returns_all_edges(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that graph.edges returns all edges.
 
@@ -315,7 +477,9 @@ class TestGraph:
         edges = list(graph.edges())
         assert len(edges) == 2
 
-    def test_graph_edges_with_condition_filters_edges(self, graph, storage):
+    def test_graph_edges_with_condition_filters_edges(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that graph.edges filters edges by condition.
 
@@ -336,37 +500,57 @@ class TestGraph:
         assert len(edges) == 1
         assert edges[0].id == edge1
 
-    def test_graph_first_node_returns_first_matching_node(self, graph, storage):
+    def test_graph_edges_condition_matches_none_returns_empty(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
+        """
+        Tests that edges with condition that matches no edge returns empty.
+
+        Arrange: Storage with edges
+        Act: edges(condition that is always False)
+        Assert: Empty list
+        """
+        storage.add_node("a")
+        storage.add_node("b")
+        storage.add_edge(("a", "b", "TYPE"))
+        edges = list(graph.edges(lambda e: e.type == "ImpossibleType"))
+        assert edges == []
+
+    def test_graph_first_node_returns_first_matching_node(
+        self, populated_graph: CpgGraph
+    ) -> None:
         """
         Tests that graph.first_node returns first matching node.
 
-        Arrange: Storage with multiple nodes
+        Arrange: Graph with multiple nodes
         Act: Get first node
         Assert: Returns first node
         """
-        storage.add_node("node1")
-        storage.add_node("node2")
-        first_node = graph.first_node()
+        first_node = populated_graph.first_node()
         assert first_node is not None
         assert first_node.id in ["node1", "node2"]
 
-    def test_graph_first_node_with_condition_returns_first_match(self, graph, storage):
+    def test_graph_first_node_with_condition_returns_first_match(
+        self,
+        populated_graph: CpgGraph,
+        populated_storage: Storage,
+    ) -> None:
         """
         Tests that graph.first_node returns first node matching condition.
 
-        Arrange: Storage with nodes having different properties
+        Arrange: Graph with nodes having different properties
         Act: Get first node matching condition
         Assert: Returns first matching node
         """
-        storage.add_node("node1")
-        storage.add_node("node2")
-        storage.set_node_props("node1", {"type": "AST"})
-        storage.set_node_props("node2", {"type": "File"})
-        first_ast = graph.first_node(lambda n: n.type == "AST")
+        populated_storage.set_node_props("node1", {"type": "AST"})
+        populated_storage.set_node_props("node2", {"type": "File"})
+        first_ast = populated_graph.first_node(lambda n: n.type == "AST")
         assert first_ast is not None
         assert first_ast.id == "node1"
 
-    def test_graph_first_node_returns_none_when_no_match(self, graph, storage):
+    def test_graph_first_node_returns_none_when_no_match(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that graph.first_node returns None when no node matches.
 
@@ -379,7 +563,9 @@ class TestGraph:
         first_file = graph.first_node(lambda n: n.type == "File")
         assert first_file is None
 
-    def test_graph_descendants_returns_all_descendants(self, graph, storage):
+    def test_graph_descendants_returns_all_descendants(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that graph.descendants returns all descendant nodes.
 
@@ -400,7 +586,23 @@ class TestGraph:
         descendant_ids = [d.id for d in descendants]
         assert "child1" in descendant_ids or "child2" in descendant_ids
 
-    def test_graph_ancestors_returns_all_ancestors(self, graph, storage):
+    def test_graph_descendants_leaf_node_returns_empty(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
+        """
+        Tests that descendants of leaf node (no outgoing edges) returns empty.
+
+        Arrange: Single node with no children
+        Act: descendants(node)
+        Assert: Empty list
+        """
+        storage.add_node("leaf")
+        node = graph.node("leaf")
+        assert list(graph.descendants(node)) == []
+
+    def test_graph_ancestors_returns_all_ancestors(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that graph.ancestors returns all ancestor nodes.
 
@@ -419,12 +621,28 @@ class TestGraph:
         ancestor_ids = [a.id for a in ancestors]
         assert "child1" in ancestor_ids or "root" in ancestor_ids
 
+    def test_graph_ancestors_root_node_returns_empty(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
+        """
+        Tests that ancestors of root node (no incoming edges) returns empty.
+
+        Arrange: Single node with no parents
+        Act: ancestors(node)
+        Assert: Empty list
+        """
+        storage.add_node("root")
+        node = graph.node("root")
+        assert list(graph.ancestors(node)) == []
+
 
 @pytest.mark.integration
 class TestCPGGraphFactory:
     """Integration tests for cpg_graph factory function."""
 
-    def test_cpg_graph_from_csv_creates_graph(self, sample_node_csv, sample_edge_csv):
+    def test_cpg_graph_from_csv_creates_graph(
+        self, sample_node_csv: Path, sample_edge_csv: Path
+    ) -> None:
         """
         Tests that cpg_graph creates graph from CSV files.
 
@@ -432,14 +650,12 @@ class TestCPGGraphFactory:
         Act: Create graph from CSV files
         Assert: Graph is created with correct nodes
         """
-        from cpg2py import cpg_graph
-
         graph = cpg_graph(sample_node_csv, sample_edge_csv)
         assert graph is not None
         node = graph.node("1")
         assert node.id == "1"
 
-    def test_cpg_graph_verbose_logs_warnings(self, temp_dir):
+    def test_cpg_graph_verbose_logs_warnings(self, temp_dir: Path) -> None:
         """
         Tests that cpg_graph with verbose=True logs warnings.
 
@@ -447,8 +663,6 @@ class TestCPGGraphFactory:
         Act: Create graph with verbose=True
         Assert: Graph is created (warnings are logged)
         """
-        from cpg2py import cpg_graph
-
         node_csv = temp_dir / "nodes.csv"
         edge_csv = temp_dir / "edges.csv"
 

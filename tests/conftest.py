@@ -3,6 +3,7 @@ Shared fixtures and test utilities for cpg2py tests.
 """
 import tempfile
 from pathlib import Path
+from typing import Generator, List, Tuple
 
 import pytest
 
@@ -11,49 +12,41 @@ from cpg2py._cpg import CpgGraph
 
 
 @pytest.fixture
-def storage():
-    """
-    Provides a fresh Storage instance for each test.
-
-    Returns:
-        Storage: A new Storage instance
-    """
+def storage() -> Storage:
+    """Fresh Storage instance per test."""
     return Storage()
 
 
 @pytest.fixture
-def graph(storage):
-    """
-    Provides a Graph instance backed by a Storage for each test.
-
-    Args:
-        storage: Storage fixture
-
-    Returns:
-        CpgGraph: A new Graph instance
-    """
+def graph(storage: Storage) -> CpgGraph:
+    """Provides a CpgGraph backed by the given storage."""
     return CpgGraph(storage)
 
 
 @pytest.fixture
-def sample_nodes():
-    """
-    Provides sample node data for tests.
+def storage_with_single_edge(storage: Storage) -> Storage:
+    """Storage with two nodes and one edge (node1, node2, TYPE)."""
+    storage.add_node("node1")
+    storage.add_node("node2")
+    storage.add_edge(("node1", "node2", "TYPE"))
+    return storage
 
-    Returns:
-        list: List of node IDs
-    """
+
+@pytest.fixture
+def graph_with_single_edge(storage_with_single_edge: Storage) -> CpgGraph:
+    """CpgGraph with two nodes and one edge (node1, node2, TYPE)."""
+    return CpgGraph(storage_with_single_edge)
+
+
+@pytest.fixture
+def sample_nodes() -> List[str]:
+    """Sample node IDs for tests."""
     return ["node1", "node2", "node3"]
 
 
 @pytest.fixture
-def sample_edges():
-    """
-    Provides sample edge data for tests.
-
-    Returns:
-        list: List of edge tuples (from_node, to_node, edge_type)
-    """
+def sample_edges() -> List[Tuple[str, str, str]]:
+    """Sample edge tuples (from_node, to_node, edge_type)."""
     return [
         ("node1", "node2", "TYPE1"),
         ("node1", "node3", "TYPE2"),
@@ -62,18 +55,12 @@ def sample_edges():
 
 
 @pytest.fixture
-def populated_storage(storage, sample_nodes, sample_edges):
-    """
-    Provides a Storage instance with sample nodes and edges.
-
-    Args:
-        storage: Storage fixture
-        sample_nodes: Sample node IDs fixture
-        sample_edges: Sample edges fixture
-
-    Returns:
-        Storage: Storage instance with nodes and edges added
-    """
+def populated_storage(
+    storage: Storage,
+    sample_nodes: List[str],
+    sample_edges: List[Tuple[str, str, str]],
+) -> Storage:
+    """Storage with sample_nodes and sample_edges added."""
     for node_id in sample_nodes:
         storage.add_node(node_id)
     for edge_id in sample_edges:
@@ -82,42 +69,21 @@ def populated_storage(storage, sample_nodes, sample_edges):
 
 
 @pytest.fixture
-def populated_graph(populated_storage):
-    """
-    Provides a Graph instance with sample nodes and edges.
-
-    Args:
-        populated_storage: Populated Storage fixture
-
-    Returns:
-        CpgGraph: Graph instance with nodes and edges
-    """
+def populated_graph(populated_storage: Storage) -> CpgGraph:
+    """CpgGraph with sample nodes and edges."""
     return CpgGraph(populated_storage)
 
 
 @pytest.fixture
-def temp_dir():
-    """
-    Provides a temporary directory for file-based tests.
-
-    Yields:
-        Path: Temporary directory path
-    """
+def temp_dir() -> Generator[Path, None, None]:
+    """Temporary directory for file-based tests; auto-cleaned."""
     with tempfile.TemporaryDirectory() as tmpdir:
         yield Path(tmpdir)
 
 
 @pytest.fixture
-def sample_node_csv(temp_dir):
-    """
-    Creates a sample node CSV file for integration tests.
-
-    Args:
-        temp_dir: Temporary directory fixture
-
-    Returns:
-        Path: Path to the created node CSV file
-    """
+def sample_node_csv(temp_dir: Path) -> Path:
+    """Path to a sample node CSV for integration tests."""
     node_csv = temp_dir / "nodes.csv"
     with open(node_csv, "w", encoding="utf-8") as f:
         f.write("id:int\tname\ttype\n")
@@ -127,16 +93,8 @@ def sample_node_csv(temp_dir):
 
 
 @pytest.fixture
-def sample_edge_csv(temp_dir):
-    """
-    Creates a sample edge CSV file for integration tests.
-
-    Args:
-        temp_dir: Temporary directory fixture
-
-    Returns:
-        Path: Path to the created edge CSV file
-    """
+def sample_edge_csv(temp_dir: Path) -> Path:
+    """Path to a sample edge CSV for integration tests."""
     edge_csv = temp_dir / "edges.csv"
     with open(edge_csv, "w", encoding="utf-8") as f:
         f.write("start\tend\ttype\n")
