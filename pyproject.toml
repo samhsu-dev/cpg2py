@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=64.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "cpg2py"
-version = "1.1.0"
+version = "1.2.0"
 description = "A graph-based data structure designed for querying CSV files in Joern format in Python"
 readme = "README.md"
 authors = [
@@ -24,14 +24,21 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 
 [project.optional-dependencies]
-test = []
-dev = [
-    "pytest>=7.0.0",
+test = [
+    "pytest>=7.4.0",
     "pytest-cov>=4.0.0",
+]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "pylint>=2.17.0",
 ]
 
 [project.urls]
@@ -39,13 +46,15 @@ Homepage = "https://github.com/samhsu-dev/cpg2py"
 Repository = "https://github.com/samhsu-dev/cpg2py"
 Documentation = "https://github.com/samhsu-dev/cpg2py"
 
+[tool.setuptools.packages.find]
+include = ["cpg2py*"]
+
 [tool.setuptools]
-packages = ["cpg2py", "cpg2py._abc", "cpg2py._cpg"]
 include-package-data = true
 
 [dependency-groups]
 dev = [
-    "pytest>=7.0.0",
+    "pytest>=7.4.0",
     "pytest-cov>=4.0.0",
     "black>=23.0.0",
     "isort>=5.12.0",
