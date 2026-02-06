@@ -2,12 +2,11 @@ from __future__ import annotations
 
 from typing import List, Optional
 
-from .._abc import AbcGraphQuerier, AbcNodeQuerier
+from .._abc import AbcNodeQuerier
 
 
 class CpgNode(AbcNodeQuerier):
-    def __init__(self, graph: AbcGraphQuerier, nid: str) -> None:
-        super().__init__(graph, nid)
+    """Concrete node implementation with CPG-specific property accessors."""
 
     @property
     def id(self) -> str:

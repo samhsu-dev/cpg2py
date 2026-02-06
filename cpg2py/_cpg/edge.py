@@ -2,12 +2,11 @@ from __future__ import annotations
 
 from typing import Optional, Tuple
 
-from .._abc import AbcEdgeQuerier, AbcGraphQuerier
+from .._abc import AbcEdgeQuerier
 
 
 class CpgEdge(AbcEdgeQuerier):
-    def __init__(self, graph: AbcGraphQuerier, f_nid: str, t_nid: str, e_type: str) -> None:
-        super().__init__(graph, f_nid, t_nid, e_type)
+    """Concrete edge implementation with CPG-specific property accessors."""
 
     @property
     def id(self) -> Tuple[str, str, str]:

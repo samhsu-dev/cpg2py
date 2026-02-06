@@ -1,4 +1,6 @@
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+import json
+from pathlib import Path
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 from .._logger import get_logger
 
@@ -188,3 +190,69 @@ class Storage:
         self.__struct[eid[1]].remove(eid)
         self.__edges.pop(eid)
         return True
+
+    def save_json(self, path: Union[Path, str]) -> None:
+        """
+        Serializes the graph (nodes and edges with properties) to a UTF-8 JSON file.
+
+        Args:
+            path: File path (Path or str).
+
+        Raises:
+            OSError: If the file cannot be written.
+            TypeError: If a property value is not JSON-serializable.
+        """
+        payload: Dict[str, Any] = {
+            "nodes": dict(self.__nodes),
+            "edges": [
+                {"from": eid[0], "to": eid[1], "type": eid[2], "props": props}
+                for eid, props in self.__edges.items()
+            ],
+        }
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(payload, f, ensure_ascii=False, indent=2)
+
+    def load_json(self, path: Union[Path, str]) -> None:
+        """
+        Replaces the current graph with the contents of the JSON file.
+
+        Clears existing nodes and edges, then loads nodes, edges, and their
+        properties. Expects top-level keys "nodes" and "edges".
+
+        Args:
+            path: File path (Path or str).
+
+        Raises:
+            OSError: If the file cannot be read.
+            ValueError: If JSON structure is invalid (missing "nodes" or "edges").
+            KeyError: If an edge object is missing "from", "to", or "type".
+        """
+        with open(path, "r", encoding="utf-8") as f:
+            data: Dict[str, Any] = json.load(f)
+        if "nodes" not in data or "edges" not in data:
+            raise ValueError("JSON must contain top-level 'nodes' and 'edges'")
+        self.__nodes = {}
+        self.__edges = {}
+        self.__struct = {}
+        nodes_data: Dict[str, Dict[str, Any]] = data["nodes"]
+        for nid, props in nodes_data.items():
+            nid_str = str(nid)
+            self.__nodes[nid_str] = dict(props) if props else {}
+            self.__struct[nid_str] = []
+        for edge_obj in data["edges"]:
+            from_nid = str(edge_obj["from"])
+            to_nid = str(edge_obj["to"])
+            etype = str(edge_obj["type"])
+            props = edge_obj.get("props")
+            if props is None:
+                props = {}
+            eid = (from_nid, to_nid, etype)
+            if from_nid not in self.__nodes:
+                self.__nodes[from_nid] = {}
+                self.__struct[from_nid] = []
+            if to_nid not in self.__nodes:
+                self.__nodes[to_nid] = {}
+                self.__struct[to_nid] = []
+            self.__edges[eid] = dict(props)
+            self.__struct[from_nid].append(eid)
+            self.__struct[to_nid].append(eid)

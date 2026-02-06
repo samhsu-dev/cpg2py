@@ -1,17 +1,21 @@
 """
 Unit tests for Node class.
 """
+from __future__ import annotations
+
 import pytest
 
 from cpg2py._abc import Storage
-from cpg2py._cpg import CpgGraph
+from cpg2py._cpg import CpgGraph, CpgNode
 
 
 @pytest.mark.unit
 class TestNode:
     """Test cases for Node class."""
 
-    def test_node_id_returns_node_identifier(self, graph, storage):
+    def test_node_id_returns_node_identifier(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that node.id returns the node identifier.
 
@@ -23,7 +27,9 @@ class TestNode:
         node = graph.node("node1")
         assert node.id == "node1"
 
-    def test_node_code_returns_code_property(self, graph, storage):
+    def test_node_code_returns_code_property(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that node.code returns the code property.
 
@@ -36,7 +42,9 @@ class TestNode:
         node = graph.node("node1")
         assert node.code == "test code"
 
-    def test_node_label_returns_label_with_primary_key(self, graph, storage):
+    def test_node_label_returns_label_with_primary_key(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that node.label returns label using primary key.
 
@@ -49,7 +57,9 @@ class TestNode:
         node = graph.node("node1")
         assert node.label == "test_label"
 
-    def test_node_label_returns_label_with_alternative_key(self, graph, storage):
+    def test_node_label_returns_label_with_alternative_key(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that node.label returns label using alternative key.
 
@@ -62,7 +72,9 @@ class TestNode:
         node = graph.node("node1")
         assert node.label == "test_label"
 
-    def test_node_flags_returns_list_of_flags(self, graph, storage):
+    def test_node_flags_returns_list_of_flags(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that node.flags returns a list of flags.
 
@@ -78,7 +90,9 @@ class TestNode:
         assert "FLAG2" in node.flags
         assert "FLAG3" in node.flags
 
-    def test_node_flags_returns_empty_list_when_missing(self, graph, storage):
+    def test_node_flags_returns_empty_list_when_missing(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that node.flags returns empty list when no flags exist.
 
@@ -90,7 +104,9 @@ class TestNode:
         node = graph.node("node1")
         assert node.flags == []
 
-    def test_node_line_num_returns_integer_with_primary_key(self, graph, storage):
+    def test_node_line_num_returns_integer_with_primary_key(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that node.line_num returns integer using primary key.
 
@@ -103,7 +119,9 @@ class TestNode:
         node = graph.node("node1")
         assert node.line_num == 42
 
-    def test_node_line_num_returns_integer_with_alternative_key(self, graph, storage):
+    def test_node_line_num_returns_integer_with_alternative_key(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that node.line_num returns integer using alternative key.
 
@@ -116,7 +134,9 @@ class TestNode:
         node = graph.node("node1")
         assert node.line_num == 42
 
-    def test_node_line_num_returns_none_for_invalid_value(self, graph, storage):
+    def test_node_line_num_returns_none_for_invalid_value(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that node.line_num returns None for invalid value.
 
@@ -129,7 +149,9 @@ class TestNode:
         node = graph.node("node1")
         assert node.line_num is None
 
-    def test_node_children_num_returns_integer(self, graph, storage):
+    def test_node_children_num_returns_integer(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that node.children_num returns integer.
 
@@ -142,7 +164,9 @@ class TestNode:
         node = graph.node("node1")
         assert node.children_num == 5
 
-    def test_node_func_id_returns_integer(self, graph, storage):
+    def test_node_func_id_returns_integer(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that node.func_id returns integer.
 
@@ -155,7 +179,9 @@ class TestNode:
         node = graph.node("node1")
         assert node.func_id == 10
 
-    def test_node_class_name_returns_string(self, graph, storage):
+    def test_node_class_name_returns_string(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that node.class_name returns string.
 
@@ -168,7 +194,9 @@ class TestNode:
         node = graph.node("node1")
         assert node.class_name == "TestClass"
 
-    def test_node_namespace_returns_string(self, graph, storage):
+    def test_node_namespace_returns_string(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that node.namespace returns string.
 
@@ -181,7 +209,9 @@ class TestNode:
         node = graph.node("node1")
         assert node.namespace == "com.example"
 
-    def test_node_name_returns_string(self, graph, storage):
+    def test_node_name_returns_string(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that node.name returns string.
 
@@ -194,7 +224,9 @@ class TestNode:
         node = graph.node("node1")
         assert node.name == "test_name"
 
-    def test_node_end_num_returns_integer_with_primary_key(self, graph, storage):
+    def test_node_end_num_returns_integer_with_primary_key(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that node.end_num returns integer using primary key.
 
@@ -207,7 +239,9 @@ class TestNode:
         node = graph.node("node1")
         assert node.end_num == 50
 
-    def test_node_end_num_returns_integer_with_alternative_key(self, graph, storage):
+    def test_node_end_num_returns_integer_with_alternative_key(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that node.end_num returns integer using alternative key.
 
@@ -220,7 +254,9 @@ class TestNode:
         node = graph.node("node1")
         assert node.end_num == 50
 
-    def test_node_comment_returns_string(self, graph, storage):
+    def test_node_comment_returns_string(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that node.comment returns string.
 
@@ -233,7 +269,65 @@ class TestNode:
         node = graph.node("node1")
         assert node.comment == "test comment"
 
-    def test_node_type_returns_string(self, graph, storage):
+    def test_node_set_property_sets_single_property(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
+        """set_property sets one node property and get_property returns it."""
+        storage.add_node("node1")
+        node = graph.node("node1")
+        result = node.set_property("name", "alice")
+        assert result is True
+        assert node.get_property("name") == "alice"
+
+    def test_node_get_property_no_names_returns_none(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
+        """get_property with no alternative names returns None."""
+        storage.add_node("node1")
+        node = graph.node("node1")
+        assert node.get_property() is None
+
+    def test_node_get_property_all_alternatives_missing_returns_none(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
+        """get_property with all alternatives missing returns None."""
+        storage.add_node("node1")
+        node = graph.node("node1")
+        assert node.get_property("missing1", "missing2") is None
+
+    def test_node_set_property_nonexistent_node_returns_false(
+        self, storage: Storage
+    ) -> None:
+        """set_property returns False when node no longer exists in storage."""
+        storage.add_node("node1")
+        node = CpgNode(storage, "node1")
+        storage.remove_node("node1")
+        result = node.set_property("name", "x")
+        assert result is False
+
+    def test_node_set_properties_sets_multiple_properties(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
+        """set_properties updates multiple node properties at once."""
+        storage.add_node("node1")
+        node = graph.node("node1")
+        result = node.set_properties({"a": 1, "b": "two"})
+        assert result is True
+        assert node.get_property("a") == 1
+        assert node.get_property("b") == "two"
+
+    def test_node_set_properties_empty_dict_succeeds(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
+        """set_properties with empty dict returns True and does not fail."""
+        storage.add_node("node1")
+        node = graph.node("node1")
+        result = node.set_properties({})
+        assert result is True
+
+    def test_node_type_returns_string(
+        self, graph: CpgGraph, storage: Storage
+    ) -> None:
         """
         Tests that node.type returns string.
 
