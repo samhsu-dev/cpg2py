@@ -1,6 +1,7 @@
 """
 Unit tests for Node class.
 """
+
 from __future__ import annotations
 
 import pytest
@@ -13,9 +14,7 @@ from cpg2py._cpg import CpgGraph, CpgNode
 class TestNode:
     """Test cases for Node class."""
 
-    def test_node_id_returns_node_identifier(
-        self, graph: CpgGraph, storage: Storage
-    ) -> None:
+    def test_node_id_returns_node_identifier(self, graph: CpgGraph, storage: Storage) -> None:
         """
         Tests that node.id returns the node identifier.
 
@@ -27,9 +26,7 @@ class TestNode:
         node = graph.node("node1")
         assert node.id == "node1"
 
-    def test_node_code_returns_code_property(
-        self, graph: CpgGraph, storage: Storage
-    ) -> None:
+    def test_node_code_returns_code_property(self, graph: CpgGraph, storage: Storage) -> None:
         """
         Tests that node.code returns the code property.
 
@@ -72,9 +69,7 @@ class TestNode:
         node = graph.node("node1")
         assert node.label == "test_label"
 
-    def test_node_flags_returns_list_of_flags(
-        self, graph: CpgGraph, storage: Storage
-    ) -> None:
+    def test_node_flags_returns_list_of_flags(self, graph: CpgGraph, storage: Storage) -> None:
         """
         Tests that node.flags returns a list of flags.
 
@@ -149,9 +144,7 @@ class TestNode:
         node = graph.node("node1")
         assert node.line_num is None
 
-    def test_node_children_num_returns_integer(
-        self, graph: CpgGraph, storage: Storage
-    ) -> None:
+    def test_node_children_num_returns_integer(self, graph: CpgGraph, storage: Storage) -> None:
         """
         Tests that node.children_num returns integer.
 
@@ -164,9 +157,7 @@ class TestNode:
         node = graph.node("node1")
         assert node.children_num == 5
 
-    def test_node_func_id_returns_integer(
-        self, graph: CpgGraph, storage: Storage
-    ) -> None:
+    def test_node_func_id_returns_integer(self, graph: CpgGraph, storage: Storage) -> None:
         """
         Tests that node.func_id returns integer.
 
@@ -179,9 +170,7 @@ class TestNode:
         node = graph.node("node1")
         assert node.func_id == 10
 
-    def test_node_class_name_returns_string(
-        self, graph: CpgGraph, storage: Storage
-    ) -> None:
+    def test_node_class_name_returns_string(self, graph: CpgGraph, storage: Storage) -> None:
         """
         Tests that node.class_name returns string.
 
@@ -194,9 +183,7 @@ class TestNode:
         node = graph.node("node1")
         assert node.class_name == "TestClass"
 
-    def test_node_namespace_returns_string(
-        self, graph: CpgGraph, storage: Storage
-    ) -> None:
+    def test_node_namespace_returns_string(self, graph: CpgGraph, storage: Storage) -> None:
         """
         Tests that node.namespace returns string.
 
@@ -209,9 +196,7 @@ class TestNode:
         node = graph.node("node1")
         assert node.namespace == "com.example"
 
-    def test_node_name_returns_string(
-        self, graph: CpgGraph, storage: Storage
-    ) -> None:
+    def test_node_name_returns_string(self, graph: CpgGraph, storage: Storage) -> None:
         """
         Tests that node.name returns string.
 
@@ -254,9 +239,7 @@ class TestNode:
         node = graph.node("node1")
         assert node.end_num == 50
 
-    def test_node_comment_returns_string(
-        self, graph: CpgGraph, storage: Storage
-    ) -> None:
+    def test_node_comment_returns_string(self, graph: CpgGraph, storage: Storage) -> None:
         """
         Tests that node.comment returns string.
 
@@ -295,9 +278,7 @@ class TestNode:
         node = graph.node("node1")
         assert node.get_property("missing1", "missing2") is None
 
-    def test_node_set_property_nonexistent_node_returns_false(
-        self, storage: Storage
-    ) -> None:
+    def test_node_set_property_nonexistent_node_returns_false(self, storage: Storage) -> None:
         """set_property returns False when node no longer exists in storage."""
         storage.add_node("node1")
         node = CpgNode(storage, "node1")
@@ -325,9 +306,7 @@ class TestNode:
         result = node.set_properties({})
         assert result is True
 
-    def test_node_type_returns_string(
-        self, graph: CpgGraph, storage: Storage
-    ) -> None:
+    def test_node_type_returns_string(self, graph: CpgGraph, storage: Storage) -> None:
         """
         Tests that node.type returns string.
 

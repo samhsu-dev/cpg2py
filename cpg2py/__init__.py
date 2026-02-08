@@ -2,8 +2,7 @@ from csv import DictReader
 from pathlib import Path
 from typing import Union
 
-from ._abc import Storage
-from ._abc import AbcEdgeQuerier, AbcGraphQuerier, AbcNodeQuerier
+from ._abc import AbcEdgeQuerier, AbcGraphQuerier, AbcNodeQuerier, Storage
 from ._cpg import CpgEdge, CpgGraph, CpgNode
 from ._exceptions import CPGError, EdgeNotFoundError, NodeNotFoundError, TopFileNotFoundError
 from ._logger import get_logger

@@ -1,6 +1,7 @@
 """
 Unit tests for Storage class.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -65,9 +66,7 @@ class TestStorage:
         storage.add_node("node3")
         assert len(list(storage.get_nodes())) == 3
 
-    def test_storage_contains_node_returns_true_for_existing(
-        self, storage: Storage
-    ) -> None:
+    def test_storage_contains_node_returns_true_for_existing(self, storage: Storage) -> None:
         """
         Tests that contains_node returns True for existing nodes.
 
@@ -78,9 +77,7 @@ class TestStorage:
         storage.add_node("node1")
         assert storage.contains_node("node1") is True
 
-    def test_storage_contains_node_returns_false_for_missing(
-        self, storage: Storage
-    ) -> None:
+    def test_storage_contains_node_returns_false_for_missing(self, storage: Storage) -> None:
         """
         Tests that contains_node returns False for missing nodes.
 
@@ -120,9 +117,7 @@ class TestStorage:
         result = storage.add_edge(edge_id)
         assert result is False
 
-    def test_storage_add_edge_missing_source_returns_false(
-        self, storage: Storage
-    ) -> None:
+    def test_storage_add_edge_missing_source_returns_false(self, storage: Storage) -> None:
         """
         Tests that adding edge with missing source node returns False.
 
@@ -135,9 +130,7 @@ class TestStorage:
         result = storage.add_edge(edge_id)
         assert result is False
 
-    def test_storage_add_edge_missing_target_returns_false(
-        self, storage: Storage
-    ) -> None:
+    def test_storage_add_edge_missing_target_returns_false(self, storage: Storage) -> None:
         """
         Tests that adding edge with missing target node returns False.
 
@@ -150,9 +143,7 @@ class TestStorage:
         result = storage.add_edge(edge_id)
         assert result is False
 
-    def test_storage_out_edges_returns_all_outgoing_edges(
-        self, storage: Storage
-    ) -> None:
+    def test_storage_out_edges_returns_all_outgoing_edges(self, storage: Storage) -> None:
         """
         Tests that out_edges returns all outgoing edges for a node.
 
@@ -172,9 +163,7 @@ class TestStorage:
         assert edge1 in out_edges
         assert edge2 in out_edges
 
-    def test_storage_in_edges_returns_all_incoming_edges(
-        self, storage: Storage
-    ) -> None:
+    def test_storage_in_edges_returns_all_incoming_edges(self, storage: Storage) -> None:
         """
         Tests that in_edges returns all incoming edges for a node.
 
@@ -194,9 +183,7 @@ class TestStorage:
         assert edge1 in in_edges
         assert edge2 in in_edges
 
-    def test_storage_successors_returns_all_successor_nodes(
-        self, storage: Storage
-    ) -> None:
+    def test_storage_successors_returns_all_successor_nodes(self, storage: Storage) -> None:
         """
         Tests that successors returns all successor nodes.
 
@@ -214,9 +201,7 @@ class TestStorage:
         assert "node2" in successors
         assert "node3" in successors
 
-    def test_storage_predecessors_returns_all_predecessor_nodes(
-        self, storage: Storage
-    ) -> None:
+    def test_storage_predecessors_returns_all_predecessor_nodes(self, storage: Storage) -> None:
         """
         Tests that predecessors returns all predecessor nodes.
 
@@ -250,9 +235,7 @@ class TestStorage:
         assert node_props["name"] == "test"
         assert node_props["type"] == "AST"
 
-    def test_storage_set_node_props_nonexistent_returns_false(
-        self, storage: Storage
-    ) -> None:
+    def test_storage_set_node_props_nonexistent_returns_false(self, storage: Storage) -> None:
         """
         Tests that set_node_props returns False for nonexistent node.
 
@@ -264,9 +247,7 @@ class TestStorage:
         result = storage.set_node_props("node1", props)
         assert result is False
 
-    def test_storage_get_node_props_returns_properties(
-        self, storage: Storage
-    ) -> None:
+    def test_storage_get_node_props_returns_properties(self, storage: Storage) -> None:
         """
         Tests that get_node_props returns node properties.
 
@@ -281,9 +262,7 @@ class TestStorage:
         assert retrieved_props is not None
         assert retrieved_props["name"] == "test"
 
-    def test_storage_get_node_props_nonexistent_returns_none(
-        self, storage: Storage
-    ) -> None:
+    def test_storage_get_node_props_nonexistent_returns_none(self, storage: Storage) -> None:
         """
         Tests that get_node_props returns None for nonexistent node.
 
@@ -294,9 +273,7 @@ class TestStorage:
         props = storage.get_node_props("node1")
         assert props is None
 
-    def test_storage_set_node_prop_sets_single_property(
-        self, storage: Storage
-    ) -> None:
+    def test_storage_set_node_prop_sets_single_property(self, storage: Storage) -> None:
         """
         Tests that set_node_prop sets a single property.
 
@@ -310,9 +287,7 @@ class TestStorage:
         value = storage.get_node_prop("node1", "name")
         assert value == "test"
 
-    def test_storage_get_node_prop_returns_property_value(
-        self, storage: Storage
-    ) -> None:
+    def test_storage_get_node_prop_returns_property_value(self, storage: Storage) -> None:
         """
         Tests that get_node_prop returns property value.
 
@@ -325,9 +300,7 @@ class TestStorage:
         value = storage.get_node_prop("node1", "name")
         assert value == "test"
 
-    def test_storage_get_node_prop_nonexistent_returns_none(
-        self, storage: Storage
-    ) -> None:
+    def test_storage_get_node_prop_nonexistent_returns_none(self, storage: Storage) -> None:
         """
         Tests that get_node_prop returns None for nonexistent property.
 
@@ -357,9 +330,7 @@ class TestStorage:
         assert edge_props["weight"] == 1.0
         assert edge_props["label"] == "test"
 
-    def test_storage_set_edge_props_nonexistent_returns_false(
-        self, storage: Storage
-    ) -> None:
+    def test_storage_set_edge_props_nonexistent_returns_false(self, storage: Storage) -> None:
         """
         Tests that set_edge_props returns False for nonexistent edge.
 
@@ -372,9 +343,7 @@ class TestStorage:
         result = storage.set_edge_props(edge_id, props)
         assert result is False
 
-    def test_storage_get_edge_props_returns_properties(
-        self, storage: Storage
-    ) -> None:
+    def test_storage_get_edge_props_returns_properties(self, storage: Storage) -> None:
         """
         Tests that get_edge_props returns edge properties.
 
@@ -392,9 +361,7 @@ class TestStorage:
         assert retrieved_props is not None
         assert retrieved_props["weight"] == 1.0
 
-    def test_storage_set_edge_prop_sets_single_property(
-        self, storage: Storage
-    ) -> None:
+    def test_storage_set_edge_prop_sets_single_property(self, storage: Storage) -> None:
         """
         Tests that set_edge_prop sets a single property.
 
@@ -411,9 +378,7 @@ class TestStorage:
         value = storage.get_edge_prop(edge_id, "weight")
         assert value == 1.0
 
-    def test_storage_get_edge_prop_returns_property_value(
-        self, storage: Storage
-    ) -> None:
+    def test_storage_get_edge_prop_returns_property_value(self, storage: Storage) -> None:
         """
         Tests that get_edge_prop returns property value.
 
@@ -442,9 +407,7 @@ class TestStorage:
         assert result is True
         assert storage.contains_node("node1") is False
 
-    def test_storage_remove_node_nonexistent_returns_false(
-        self, storage: Storage
-    ) -> None:
+    def test_storage_remove_node_nonexistent_returns_false(self, storage: Storage) -> None:
         """
         Tests that remove_node returns False for nonexistent node.
 
@@ -471,9 +434,7 @@ class TestStorage:
         assert result is True
         assert storage.contains_edge(edge_id) is False
 
-    def test_storage_remove_edge_nonexistent_returns_false(
-        self, storage: Storage
-    ) -> None:
+    def test_storage_remove_edge_nonexistent_returns_false(self, storage: Storage) -> None:
         """
         Tests that remove_edge returns False for nonexistent edge.
 
@@ -485,9 +446,7 @@ class TestStorage:
         result = storage.remove_edge(edge_id)
         assert result is False
 
-    def test_storage_get_nodes_empty_returns_empty_iterable(
-        self, storage: Storage
-    ) -> None:
+    def test_storage_get_nodes_empty_returns_empty_iterable(self, storage: Storage) -> None:
         """
         Tests that get_nodes on empty storage returns empty iterable.
 
@@ -513,9 +472,7 @@ class TestStorage:
         assert "node1" in nodes
         assert "node2" in nodes
 
-    def test_storage_get_edges_empty_returns_empty_iterable(
-        self, storage: Storage
-    ) -> None:
+    def test_storage_get_edges_empty_returns_empty_iterable(self, storage: Storage) -> None:
         """
         Tests that get_edges on empty storage returns empty iterable.
 
@@ -526,9 +483,7 @@ class TestStorage:
         edges = list(storage.get_edges())
         assert edges == []
 
-    def test_storage_out_edges_nonexistent_node_returns_empty(
-        self, storage: Storage
-    ) -> None:
+    def test_storage_out_edges_nonexistent_node_returns_empty(self, storage: Storage) -> None:
         """
         Tests that out_edges for nonexistent node returns empty iterable.
 
@@ -539,9 +494,7 @@ class TestStorage:
         out = list(storage.out_edges("nonexistent"))
         assert out == []
 
-    def test_storage_in_edges_nonexistent_node_returns_empty(
-        self, storage: Storage
-    ) -> None:
+    def test_storage_in_edges_nonexistent_node_returns_empty(self, storage: Storage) -> None:
         """
         Tests that in_edges for nonexistent node returns empty iterable.
 
@@ -552,9 +505,7 @@ class TestStorage:
         inc = list(storage.in_edges("nonexistent"))
         assert inc == []
 
-    def test_storage_successors_nonexistent_node_returns_empty(
-        self, storage: Storage
-    ) -> None:
+    def test_storage_successors_nonexistent_node_returns_empty(self, storage: Storage) -> None:
         """
         Tests that successors for nonexistent node returns empty iterable.
 
@@ -565,9 +516,7 @@ class TestStorage:
         succ = list(storage.successors("nonexistent"))
         assert succ == []
 
-    def test_storage_predecessors_nonexistent_node_returns_empty(
-        self, storage: Storage
-    ) -> None:
+    def test_storage_predecessors_nonexistent_node_returns_empty(self, storage: Storage) -> None:
         """
         Tests that predecessors for nonexistent node returns empty iterable.
 
@@ -578,9 +527,7 @@ class TestStorage:
         pred = list(storage.predecessors("nonexistent"))
         assert pred == []
 
-    def test_storage_set_node_props_empty_dict_succeeds(
-        self, storage: Storage
-    ) -> None:
+    def test_storage_set_node_props_empty_dict_succeeds(self, storage: Storage) -> None:
         """
         Tests that set_node_props with empty dict does not fail.
 
@@ -593,9 +540,7 @@ class TestStorage:
         assert result is True
         assert storage.contains_node("n1")
 
-    def test_storage_set_edge_props_empty_dict_succeeds(
-        self, storage: Storage
-    ) -> None:
+    def test_storage_set_edge_props_empty_dict_succeeds(self, storage: Storage) -> None:
         """
         Tests that set_edge_props with empty dict does not fail.
 
@@ -676,9 +621,7 @@ class TestStorage:
         assert len(edges) == 1
         assert edge_id in edges
 
-    def test_storage_save_json_empty_graph_succeeds(
-        self, storage: Storage, temp_dir: Path
-    ) -> None:
+    def test_storage_save_json_empty_graph_succeeds(self, storage: Storage, temp_dir: Path) -> None:
         """
         Tests that save_json on empty graph writes valid JSON and does not raise.
 
@@ -724,8 +667,7 @@ class TestStorage:
         path = temp_dir / "no_props.json"
         with open(path, "w", encoding="utf-8") as f:
             f.write(
-                '{"nodes": {"1": {}, "2": {}}, '
-                '"edges": [{"from": "1", "to": "2", "type": "T"}]}'
+                '{"nodes": {"1": {}, "2": {}}, ' '"edges": [{"from": "1", "to": "2", "type": "T"}]}'
             )
         storage.load_json(path)
         assert storage.contains_edge(("1", "2", "T"))
@@ -775,10 +717,7 @@ class TestStorage:
         """
         path = temp_dir / "bad_edge.json"
         with open(path, "w", encoding="utf-8") as f:
-            f.write(
-                '{"nodes": {"1": {}, "2": {}}, '
-                '"edges": [{"to": "2", "type": "T"}]}'
-            )
+            f.write('{"nodes": {"1": {}, "2": {}}, ' '"edges": [{"to": "2", "type": "T"}]}')
         with pytest.raises(KeyError):
             storage.load_json(path)
 
@@ -824,9 +763,7 @@ class TestStorage:
         with pytest.raises(ValueError, match="nodes.*edges"):
             storage.load_json(path)
 
-    def test_storage_from_json_creates_populated_storage(
-        self, temp_dir: Path
-    ) -> None:
+    def test_storage_from_json_creates_populated_storage(self, temp_dir: Path) -> None:
         """storage_from_json returns Storage populated from JSON file."""
         path = temp_dir / "graph.json"
         with open(path, "w", encoding="utf-8") as f:

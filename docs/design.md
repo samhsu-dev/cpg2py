@@ -20,41 +20,41 @@
   - **Behavior**: Initializes graph querier with storage reference and optional depth limit
   - **Input**: Storage instance, maximum traversal depth (-1 for unlimited)
   - **Output**: None
-- **[node(whose_id_is: str) -> Optional[_ConcreteNodeType]]**
+- **[node(whose_id_is: str) -> Optional[_GenericNode]]**
   - **Behavior**: Returns node querier by identifier (abstract method)
   - **Input**: Node identifier string
   - **Output**: Node querier instance or None
   - **Raises**: Must be implemented by subclass
-- **[edge(fid: str, tid: str, eid: str) -> Optional[_ConcreteEdgeType]]**
+- **[edge(fid: str, tid: str, eid: str) -> Optional[_GenericEdge]]**
   - **Behavior**: Returns edge querier by source, target, and edge type (abstract method)
   - **Input**: Source node ID, target node ID, edge type
   - **Output**: Edge querier instance or None
   - **Raises**: Must be implemented by subclass
-- **[nodes(who_satisifies: Callable[[_NodeType], bool] = always_true) -> Iterable[_ConcreteNodeType]]**
+- **[nodes(who_satisifies: Callable[[_NodeType], bool] = always_true) -> Iterable[_GenericNode]]**
   - **Behavior**: Yields all nodes matching the condition
   - **Input**: Node condition predicate function
   - **Output**: Iterable of matching node queriers
-- **[first_node(who_satisifies: Callable[[_NodeType], bool] = always_true) -> Optional[_ConcreteNodeType]]**
+- **[first_node(who_satisifies: Callable[[_NodeType], bool] = always_true) -> Optional[_GenericNode]]**
   - **Behavior**: Returns first node matching the condition
   - **Input**: Node condition predicate function
   - **Output**: First matching node querier or None
-- **[edges(who_satisifies: Callable[[_EdgeType], bool] = always_true) -> Iterable[_ConcreteEdgeType]]**
+- **[edges(who_satisifies: Callable[[_EdgeType], bool] = always_true) -> Iterable[_GenericEdge]]**
   - **Behavior**: Yields all edges matching the condition
   - **Input**: Edge condition predicate function
   - **Output**: Iterable of matching edge queriers
-- **[succ(of: _ConcreteNodeType, who_satisifies: Callable[[_EdgeType], bool] = always_true) -> Iterable[_ConcreteNodeType]]**
+- **[succ(of: _GenericNode, who_satisifies: Callable[[_EdgeType], bool] = always_true) -> Iterable[_GenericNode]]**
   - **Behavior**: Yields successor nodes connected via outgoing edges matching condition
   - **Input**: Source node querier, edge condition predicate
   - **Output**: Iterable of successor node queriers
-- **[prev(of: _ConcreteNodeType, who_satisifies: Callable[[_EdgeType], bool] = always_true) -> Iterable[_ConcreteNodeType]]**
+- **[prev(of: _GenericNode, who_satisifies: Callable[[_EdgeType], bool] = always_true) -> Iterable[_GenericNode]]**
   - **Behavior**: Yields predecessor nodes connected via incoming edges matching condition
   - **Input**: Target node querier, edge condition predicate
   - **Output**: Iterable of predecessor node queriers
-- **[descendants(src: _ConcreteNodeType, condition: Callable[[_EdgeType], bool] = always_true) -> Iterable[_ConcreteNodeType]]**
+- **[descendants(src: _GenericNode, condition: Callable[[_EdgeType], bool] = always_true) -> Iterable[_GenericNode]]**
   - **Behavior**: Yields descendant nodes via breadth-first search excluding root
   - **Input**: Source node querier, edge condition predicate
   - **Output**: Iterable of descendant node queriers in BFS order
-- **[ancestors(src: _ConcreteNodeType, condition: Callable[[_EdgeType], bool] = always_true) -> Iterable[_ConcreteNodeType]]**
+- **[ancestors(src: _GenericNode, condition: Callable[[_EdgeType], bool] = always_true) -> Iterable[_GenericNode]]**
   - **Behavior**: Yields ancestor nodes via reverse breadth-first search excluding root
   - **Input**: Source node querier, edge condition predicate
   - **Output**: Iterable of ancestor node queriers in BFS order

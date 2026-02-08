@@ -1,6 +1,7 @@
 """
 Unit tests for Edge class.
 """
+
 from __future__ import annotations
 
 import pytest
@@ -13,9 +14,7 @@ from cpg2py._cpg import CpgGraph
 class TestEdge:
     """Test cases for Edge class."""
 
-    def test_edge_id_returns_edge_tuple(
-        self, graph_with_single_edge: CpgGraph
-    ) -> None:
+    def test_edge_id_returns_edge_tuple(self, graph_with_single_edge: CpgGraph) -> None:
         """
         Tests that edge.id returns the edge tuple.
 
@@ -146,9 +145,7 @@ class TestEdge:
         edge = graph_with_single_edge.edge("node1", "node2", "TYPE")
         assert edge.var == "variable_name"
 
-    def test_edge_set_property_sets_single_property(
-        self, graph_with_single_edge: CpgGraph
-    ) -> None:
+    def test_edge_set_property_sets_single_property(self, graph_with_single_edge: CpgGraph) -> None:
         """set_property sets one edge property and get_property returns it."""
         edge = graph_with_single_edge.edge("node1", "node2", "TYPE")
         result = edge.set_property("weight", 0.5)
@@ -195,9 +192,7 @@ class TestEdge:
         props = edge.properties
         assert props is None or props == {}
 
-    def test_edge_id_is_tuple_of_strings(
-        self, graph: CpgGraph, storage: Storage
-    ) -> None:
+    def test_edge_id_is_tuple_of_strings(self, graph: CpgGraph, storage: Storage) -> None:
         """edge_id is (from_nid, to_nid, edge_type) with all strings."""
         storage.add_node("node1")
         storage.add_node("node2")

@@ -1,6 +1,7 @@
 """
 Unit tests for generic type functionality.
 """
+
 from __future__ import annotations
 
 import pytest
@@ -25,9 +26,7 @@ class TestGenerics:
         assert isinstance(graph, AbcGraphQuerier)
         assert isinstance(graph, CpgGraph)
 
-    def test_graph_node_returns_concrete_node_type(
-        self, graph: CpgGraph, storage: Storage
-    ) -> None:
+    def test_graph_node_returns_concrete_node_type(self, graph: CpgGraph, storage: Storage) -> None:
         """
         Tests that graph.node returns CpgNode type (not just AbcNodeQuerier).
 
@@ -41,9 +40,7 @@ class TestGenerics:
         assert isinstance(node, CpgNode)
         assert isinstance(node, type(node))  # Type consistency
 
-    def test_graph_edge_returns_concrete_edge_type(
-        self, graph: CpgGraph, storage: Storage
-    ) -> None:
+    def test_graph_edge_returns_concrete_edge_type(self, graph: CpgGraph, storage: Storage) -> None:
         """
         Tests that graph.edge returns CpgEdge type (not just AbcEdgeQuerier).
 
@@ -58,9 +55,7 @@ class TestGenerics:
         assert edge is not None
         assert isinstance(edge, CpgEdge)
 
-    def test_graph_succ_returns_concrete_node_types(
-        self, populated_graph: CpgGraph
-    ) -> None:
+    def test_graph_succ_returns_concrete_node_types(self, populated_graph: CpgGraph) -> None:
         """
         Tests that graph.succ returns Iterable[CpgNode] with correct types.
 
@@ -75,9 +70,7 @@ class TestGenerics:
             assert isinstance(succ, CpgNode)
             assert hasattr(succ, "code")
 
-    def test_graph_prev_returns_concrete_node_types(
-        self, populated_graph: CpgGraph
-    ) -> None:
+    def test_graph_prev_returns_concrete_node_types(self, populated_graph: CpgGraph) -> None:
         """
         Tests that graph.prev returns Iterable[CpgNode] with correct types.
 
@@ -92,9 +85,7 @@ class TestGenerics:
             assert isinstance(pred, CpgNode)
             assert hasattr(pred, "code")
 
-    def test_graph_nodes_returns_concrete_node_types(
-        self, populated_graph: CpgGraph
-    ) -> None:
+    def test_graph_nodes_returns_concrete_node_types(self, populated_graph: CpgGraph) -> None:
         """
         Tests that graph.nodes returns Iterable[CpgNode] with correct types.
 
@@ -173,9 +164,7 @@ class TestGenerics:
         for anc in ancestors:
             assert isinstance(anc, CpgNode)
 
-    def test_graph_first_node_returns_concrete_node_type(
-        self, populated_graph: CpgGraph
-    ) -> None:
+    def test_graph_first_node_returns_concrete_node_type(self, populated_graph: CpgGraph) -> None:
         """
         Tests that graph.first_node returns CpgNode type.
 
@@ -187,9 +176,7 @@ class TestGenerics:
         assert first_node is not None
         assert isinstance(first_node, CpgNode)
 
-    def test_graph_first_node_returns_none_when_empty(
-        self, graph: CpgGraph
-    ) -> None:
+    def test_graph_first_node_returns_none_when_empty(self, graph: CpgGraph) -> None:
         """
         Tests that graph.first_node returns None when graph is empty.
 

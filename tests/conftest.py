@@ -1,6 +1,7 @@
 """
 Shared fixtures and test utilities for cpg2py tests.
 """
+
 import tempfile
 from pathlib import Path
 from typing import Generator, List, Tuple

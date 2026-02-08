@@ -1,16 +1,12 @@
 """
 Unit tests for custom exceptions.
 """
+
 from typing import List
 
 import pytest
 
-from cpg2py._exceptions import (
-    CPGError,
-    EdgeNotFoundError,
-    NodeNotFoundError,
-    TopFileNotFoundError,
-)
+from cpg2py._exceptions import CPGError, EdgeNotFoundError, NodeNotFoundError, TopFileNotFoundError
 
 
 @pytest.mark.unit

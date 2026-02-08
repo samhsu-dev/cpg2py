@@ -8,19 +8,13 @@ from .edge import AbcEdgeQuerier
 from .node import AbcNodeQuerier
 from .storage import Storage
 
-# Type variables for generic graph querier
-# Covariant: subtypes can be used where base types are expected
-_NodeType = TypeVar("_NodeType", bound=AbcNodeQuerier, covariant=True)
-_EdgeType = TypeVar("_EdgeType", bound=AbcEdgeQuerier, covariant=True)
-
-# Type variables for concrete implementations (invariant)
-_ConcreteNodeType = TypeVar("_ConcreteNodeType", bound=AbcNodeQuerier)
-_ConcreteEdgeType = TypeVar("_ConcreteEdgeType", bound=AbcEdgeQuerier)
-_NodeCondition = Callable[[_NodeType], bool]
-_EdgeCondition = Callable[[_EdgeType], bool]
+# Type variables for concrete implementations (invariant).
+# Used as Generic params so type checkers infer node/edge types at call sites.
+_GenericNode = TypeVar("_GenericNode", bound=AbcNodeQuerier)
+_GenericEdge = TypeVar("_GenericEdge", bound=AbcEdgeQuerier)
 
 
-class AbcGraphQuerier(abc.ABC, Generic[_ConcreteNodeType, _ConcreteEdgeType]):
+class AbcGraphQuerier(abc.ABC, Generic[_GenericNode, _GenericEdge]):
     """
     Abstract base class for graph query operations.
 
@@ -35,10 +29,13 @@ class AbcGraphQuerier(abc.ABC, Generic[_ConcreteNodeType, _ConcreteEdgeType]):
             ...
 
     Type Parameters:
-        _ConcreteNodeType: The concrete node type returned by node() and related methods
-        _ConcreteEdgeType: The concrete edge type returned by edge() and used in conditions
+        _GenericNode: The concrete node type returned by node() and related methods
+        _GenericEdge: The concrete edge type returned by edge() and used in conditions
     """
+
     __always_true = lambda _: True
+    NodeCondition = Callable[[_GenericNode], bool]
+    EdgeCondition = Callable[[_GenericEdge], bool]
 
     def __init__(self, target: Storage, maxdepth: int = -1) -> None:
         """
@@ -62,7 +59,7 @@ class AbcGraphQuerier(abc.ABC, Generic[_ConcreteNodeType, _ConcreteEdgeType]):
         return self.__graph
 
     @abc.abstractmethod
-    def node(self, whose_id_is: str) -> Optional[_ConcreteNodeType]:
+    def node(self, whose_id_is: str) -> Optional[_GenericNode]:
         """
         Returns a node by its ID.
 
@@ -75,7 +72,7 @@ class AbcGraphQuerier(abc.ABC, Generic[_ConcreteNodeType, _ConcreteEdgeType]):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def edge(self, fid: str, tid: str, eid: str) -> Optional[_ConcreteEdgeType]:
+    def edge(self, fid: str, tid: str, eid: str) -> Optional[_GenericEdge]:
         """
         Returns an edge by its source, target, and edge type.
 
@@ -90,8 +87,9 @@ class AbcGraphQuerier(abc.ABC, Generic[_ConcreteNodeType, _ConcreteEdgeType]):
         raise NotImplementedError
 
     def nodes(
-        self, who_satisifies: _NodeCondition = __always_true
-    ) -> Iterable[_ConcreteNodeType]:
+        self,
+        who_satisifies: Callable[[_GenericNode], bool] = __always_true,
+    ) -> Iterable[_GenericNode]:
         """
         Returns all nodes matching the condition.
 
@@ -107,8 +105,9 @@ class AbcGraphQuerier(abc.ABC, Generic[_ConcreteNodeType, _ConcreteEdgeType]):
                 yield cur_node
 
     def first_node(
-        self, who_satisifies: _NodeCondition = __always_true
-    ) -> Optional[_ConcreteNodeType]:
+        self,
+        who_satisifies: NodeCondition = __always_true,
+    ) -> Optional[_GenericNode]:
         """
         Returns the first node matching the condition.
 
@@ -121,8 +120,9 @@ class AbcGraphQuerier(abc.ABC, Generic[_ConcreteNodeType, _ConcreteEdgeType]):
         return next(self.nodes(who_satisifies), None)
 
     def edges(
-        self, who_satisifies: _EdgeCondition = __always_true
-    ) -> Iterable[_ConcreteEdgeType]:
+        self,
+        who_satisifies: EdgeCondition = __always_true,
+    ) -> Iterable[_GenericEdge]:
         """
         Returns all edges matching the condition.
 
@@ -138,8 +138,10 @@ class AbcGraphQuerier(abc.ABC, Generic[_ConcreteNodeType, _ConcreteEdgeType]):
                 yield cur_edge
 
     def succ(
-        self, of: _ConcreteNodeType, who_satisifies: _EdgeCondition = __always_true
-    ) -> Iterable[_ConcreteNodeType]:
+        self,
+        of: _GenericNode,
+        who_satisifies: EdgeCondition = __always_true,
+    ) -> Iterable[_GenericNode]:
         """
         Returns successor nodes connected to the input node.
 
@@ -158,8 +160,10 @@ class AbcGraphQuerier(abc.ABC, Generic[_ConcreteNodeType, _ConcreteEdgeType]):
                     yield node
 
     def prev(
-        self, of: _ConcreteNodeType, who_satisifies: _EdgeCondition = __always_true
-    ) -> Iterable[_ConcreteNodeType]:
+        self,
+        of: _GenericNode,
+        who_satisifies: EdgeCondition = __always_true,
+    ) -> Iterable[_GenericNode]:
         """
         Returns predecessor nodes connected to the input node.
 
@@ -178,8 +182,11 @@ class AbcGraphQuerier(abc.ABC, Generic[_ConcreteNodeType, _ConcreteEdgeType]):
                     yield node
 
     def __bfs_search(
-        self, root: _ConcreteNodeType, condition: _EdgeCondition, reverse: bool
-    ) -> Iterable[_ConcreteNodeType]:
+        self,
+        root: _GenericNode,
+        condition: EdgeCondition,
+        reverse: bool,
+    ) -> Iterable[_GenericNode]:
         """
         Returns nodes from src node by BFS order (src node not included).
 
@@ -194,7 +201,7 @@ class AbcGraphQuerier(abc.ABC, Generic[_ConcreteNodeType, _ConcreteEdgeType]):
         if root is None:
             return
         visited_nids: List[str] = []
-        nodes_queue: Deque[_ConcreteNodeType] = deque([root, None])
+        nodes_queue: Deque[_GenericNode] = deque([root, None])
         depth = self.__maxdepth
         while depth != 0 and len(nodes_queue) > 1:
             cur_node = nodes_queue.popleft()
@@ -212,8 +219,10 @@ class AbcGraphQuerier(abc.ABC, Generic[_ConcreteNodeType, _ConcreteEdgeType]):
                     yield cur_node
 
     def descendants(
-        self, src: _ConcreteNodeType, condition: _EdgeCondition = __always_true
-    ) -> Iterable[_ConcreteNodeType]:
+        self,
+        src: _GenericNode,
+        condition: EdgeCondition = __always_true,
+    ) -> Iterable[_GenericNode]:
         """
         Returns descendants from src node by BFS order (src node not included).
 
@@ -227,8 +236,10 @@ class AbcGraphQuerier(abc.ABC, Generic[_ConcreteNodeType, _ConcreteEdgeType]):
         return self.__bfs_search(src, condition, reverse=False)
 
     def ancestors(
-        self, src: _ConcreteNodeType, condition: _EdgeCondition = __always_true
-    ) -> Iterable[_ConcreteNodeType]:
+        self,
+        src: _GenericNode,
+        condition: EdgeCondition = __always_true,
+    ) -> Iterable[_GenericNode]:
         """
         Returns ancestors from src node by BFS order (src node not included).
 
