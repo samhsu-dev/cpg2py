@@ -22,7 +22,7 @@ class CpgGraph(AbcGraphQuerier[CpgNode, CpgEdge]):
     throughout the graph operations.
     """
 
-    __EdgeCondition = Callable[[CpgEdge], bool]
+    _EdgeCondition = Callable[[CpgEdge], bool]
     __always_true = lambda _: True
 
     def __init__(self, target: Storage) -> None:
@@ -104,7 +104,7 @@ class CpgGraph(AbcGraphQuerier[CpgNode, CpgEdge]):
         logger.error("Cannot find top file node from node %s", of_nid)
         raise TopFileNotFoundError(of_nid)
 
-    def succ(self, of: CpgNode, who_satisifies: __EdgeCondition = __always_true) -> Iterable[CpgNode]:
+    def succ(self, of: CpgNode, who_satisifies: _EdgeCondition = __always_true) -> Iterable[CpgNode]:
         """
         Returns successor nodes connected to the input node.
 
@@ -117,7 +117,7 @@ class CpgGraph(AbcGraphQuerier[CpgNode, CpgEdge]):
         """
         return super().succ(of, who_satisifies)
 
-    def prev(self, of: CpgNode, who_satisifies: __EdgeCondition = __always_true) -> Iterable[CpgNode]:
+    def prev(self, of: CpgNode, who_satisifies: _EdgeCondition = __always_true) -> Iterable[CpgNode]:
         """
         Returns predecessor nodes connected to the input node.
 
@@ -130,7 +130,7 @@ class CpgGraph(AbcGraphQuerier[CpgNode, CpgEdge]):
         """
         return super().prev(of, who_satisifies)
 
-    def children(self, of: CpgNode, extra: __EdgeCondition = __always_true) -> Iterable[CpgNode]:
+    def children(self, of: CpgNode, extra: _EdgeCondition = __always_true) -> Iterable[CpgNode]:
         """
         Returns child nodes connected via PARENT_OF edges.
 
@@ -143,7 +143,7 @@ class CpgGraph(AbcGraphQuerier[CpgNode, CpgEdge]):
         """
         return self.succ(of, lambda e: extra(e) and (e.type == "PARENT_OF"))
 
-    def parent(self, of: CpgNode, extra: __EdgeCondition = __always_true) -> Iterable[CpgNode]:
+    def parent(self, of: CpgNode, extra: _EdgeCondition = __always_true) -> Iterable[CpgNode]:
         """
         Returns parent nodes connected via PARENT_OF edges.
 
@@ -156,7 +156,7 @@ class CpgGraph(AbcGraphQuerier[CpgNode, CpgEdge]):
         """
         return self.prev(of, lambda e: extra(e) and (e.type == "PARENT_OF"))
 
-    def flow_to(self, of: CpgNode, extra: __EdgeCondition = __always_true) -> Iterable[CpgNode]:
+    def flow_to(self, of: CpgNode, extra: _EdgeCondition = __always_true) -> Iterable[CpgNode]:
         """
         Returns successor nodes connected via FLOWS_TO edges.
 
@@ -169,7 +169,7 @@ class CpgGraph(AbcGraphQuerier[CpgNode, CpgEdge]):
         """
         return self.succ(of, lambda e: extra(e) and (e.type == "FLOWS_TO"))
 
-    def flow_from(self, of: CpgNode, extra: __EdgeCondition = __always_true) -> Iterable[CpgNode]:
+    def flow_from(self, of: CpgNode, extra: _EdgeCondition = __always_true) -> Iterable[CpgNode]:
         """
         Returns predecessor nodes connected via FLOWS_TO edges.
 

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cpg2py"
-version = "1.2.0"
+version = "1.2.1"
 description = "A graph-based data structure designed for querying CSV files in Joern format in Python"
 readme = "README.md"
 authors = [
